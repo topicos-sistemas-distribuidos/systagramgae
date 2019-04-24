@@ -2,10 +2,24 @@ package br.ufc.great.tsd.service;
 
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
 import br.ufc.great.tsd.entity.LikesEntity;
-import br.ufc.great.tsd.http.Likes;
 
 public class LikesService{
+	
+	private final EntityManagerFactory entityManagerFactory;
+	
+	private final EntityManager entityManager;
+	
+	public LikesService(){
+		/*CRIANDO O NOSSO EntityManagerFactory COM AS PORPRIEDADOS DO ARQUIVO persistence.xml */
+		this.entityManagerFactory = Persistence.createEntityManagerFactory("persistence_unit_db_estudo");
+		this.entityManager = this.entityManagerFactory.createEntityManager();
+	}
+
 
 	public List<LikesEntity> getAll() {
 		// TODO Auto-generated method stub
