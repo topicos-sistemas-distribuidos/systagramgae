@@ -5,10 +5,12 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
 
 @Entity
+@Table(name="Likes")
 public class LikesEntity extends AbstractModel<Long>{
 	private static final long serialVersionUID = 1L;
 	private String description;

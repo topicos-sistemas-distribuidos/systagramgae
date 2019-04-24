@@ -28,4 +28,10 @@ public class PictureService{
 		// TODO Auto-generated method stub
 		
 	}
+
+
+	public void delete(Long id) {
+		// TODO Auto-generated method stub
+		
+	}
 }

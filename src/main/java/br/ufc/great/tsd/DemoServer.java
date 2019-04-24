@@ -11,8 +11,6 @@ public class DemoServer extends Application {
      */
     @Override
     public Restlet createInboundRoot() {
-        // Create a router Restlet that routes each call to a
-        // new instance of HelloWorldResource.
         Router router = new Router(getContext());
 
         router.attach("/users", UserResource.class);
@@ -40,7 +38,11 @@ public class DemoServer extends Application {
         router.attach("/person/{personLogged}/post/{postId}/comment", PersonResource.class);
         router.attach("/person/{personLogged}/post/{postId}/likes", PersonResource.class);
         router.attach("/person/{id}/post/search", PersonResource.class);
-
+        
+        router.attach("/upload/person/{id}/picture", FileUploadResource.class);
+        router.attach("/upload/selected/image/users/{idUser}", FileUploadResource.class);
+        router.attach("/upload/selected/picture/person/{personId}", FileUploadResource.class);
+        
         return router;
     }
 }
