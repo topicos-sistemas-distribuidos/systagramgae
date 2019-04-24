@@ -1,5 +1,6 @@
 package br.ufc.great.tsd.entity;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,6 +45,10 @@ public class PersonEntity extends AbstractModel<Long>{
 	@JsonBackReference(value="person-post")
 	@OneToMany(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	private List<PostEntity> posts = new LinkedList<>();
+	
+	@JsonBackReference(value="person-like")
+	@OneToMany(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	private List<LikesEntity> likes = new LinkedList<>();
 
 	public PersonEntity() {
 	}
@@ -73,6 +78,14 @@ public class PersonEntity extends AbstractModel<Long>{
 		this.comments = comments;
 	}
 
+	public List<LikesEntity> getLikes(){
+		return likes; 
+	}
+	
+	public void setLikes(List<LikesEntity> likes) {
+		this.likes = likes;
+	}
+	
 	public UsersEntity getUser() {
 		return user;
 	}
@@ -157,6 +170,15 @@ public class PersonEntity extends AbstractModel<Long>{
 
 	public void addPost(PostEntity post) {
 		this.posts.add(post);
+	}
+	
+	public void addLike(LikesEntity like, PersonEntity person) {
+		this.likes.add(like);
+	}
+
+	public List<PostEntity> getPostByDateFromTo(Date from, Date to) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

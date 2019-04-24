@@ -29,6 +29,21 @@ public class PostEntity extends AbstractModel<Long>{
 	@OneToMany(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	private List<CommentEntity> comments = new LinkedList<>();
 	
+	@OneToMany(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	private List<LikesEntity> listLikes = new LinkedList<>();
+	
+	public List<LikesEntity> getListLikes() {
+		return listLikes;
+	}
+
+	public void setListLikes(List<LikesEntity> listLikes) {
+		this.listLikes = listLikes;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
 	public PostEntity() {
 	}
 	
@@ -65,5 +80,9 @@ public class PostEntity extends AbstractModel<Long>{
 	
 	public void addComment(CommentEntity comment) {
 		this.getComments().add(comment);
+	}
+
+	public void addLike(LikesEntity like) {
+		this.getListLikes().add(like);
 	}
 }

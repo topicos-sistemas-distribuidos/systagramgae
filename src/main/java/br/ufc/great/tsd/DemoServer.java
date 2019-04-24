@@ -15,13 +15,31 @@ public class DemoServer extends Application {
         // new instance of HelloWorldResource.
         Router router = new Router(getContext());
 
-        // Defines only one route
         router.attach("/users", UserResource.class);
         router.attach("/users/{id}", UserResource.class);
         router.attach("/users/{newUser}", UserResource.class);
         router.attach("/users/{user}", UserResource.class);
         router.attach("/users/{idToDelete}", UserResource.class);
         router.attach("/users/{email}/{senha}", UserResource.class);
+        
+        router.attach("/person", PersonResource.class);
+        router.attach("/person/{id}/comment", PersonResource.class);
+        router.attach("/person/{id}/likes", PersonResource.class);
+        router.attach("/person/comment", PersonResource.class);
+        router.attach("/person/likes", PersonResource.class);
+        router.attach("/person/{id}/comment/add", PersonResource.class);
+        router.attach("/person/{id}/likes/add", PersonResource.class);
+        router.attach("/person/{id}/comment/save", PersonResource.class);
+        router.attach("/person/{id}/likes/save", PersonResource.class);
+        router.attach("/person/{id}/comment/update", PersonResource.class);
+        router.attach("/person/{personId}/comment/{commentId}/edit", PersonResource.class);
+        router.attach("/person/{personId}/select/picture", PersonResource.class);
+        router.attach("/person/{personId}/picture/{pictureId}/edit", PersonResource.class);
+        router.attach("/person/{id}/post", PersonResource.class);
+        router.attach("/person/{personId}/picture/{pictureId}/post", PersonResource.class);
+        router.attach("/person/{personLogged}/post/{postId}/comment", PersonResource.class);
+        router.attach("/person/{personLogged}/post/{postId}/likes", PersonResource.class);
+        router.attach("/person/{id}/post/search", PersonResource.class);
 
         return router;
     }

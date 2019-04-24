@@ -30,6 +30,8 @@ public class Person{
 	private List<Picture> pictures = new LinkedList<>();
 	
 	private List<Post> posts = new LinkedList<>();
+	
+	private List<Likes> listLikes = new LinkedList<>();
 
 	public Person() {
 	}
@@ -141,6 +143,14 @@ public class Person{
 
 	public void addPost(Post post) {
 		this.posts.add(post);
+	}
+
+	public List<Likes> getListLikes() {
+		return listLikes;
+	}
+
+	public void setListLikes(List<Likes> listLikes) {
+		this.listLikes = listLikes;
 	}
 	
 }

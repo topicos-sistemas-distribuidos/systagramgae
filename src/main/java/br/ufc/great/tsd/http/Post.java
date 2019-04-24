@@ -21,6 +21,7 @@ public class Post{
 	private Person person;
 	private Picture picture;
 	private List<Comment> comments = new LinkedList<>();
+	private List<Likes> listLikes = new LinkedList<>();
 	
 	public Post() {
 	}
@@ -69,4 +70,17 @@ public class Post{
 	public void addComment(Comment comment) {
 		this.getComments().add(comment);
 	}
+
+	public void addLike(Likes likes) {
+		this.getListLikes().add(likes);
+	}
+	
+	public List<Likes> getListLikes() {
+		return listLikes;
+	}
+
+	public void setListLikes(List<Likes> listLikes) {
+		this.listLikes = listLikes;
+	}
+
 }
