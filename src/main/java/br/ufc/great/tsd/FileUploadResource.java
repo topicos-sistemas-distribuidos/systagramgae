@@ -6,24 +6,39 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
+import org.restlet.resource.Get;
+import org.restlet.resource.Post;
+import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
+import org.restlet.resource.Status;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import br.ufc.great.tsd.entity.PersonEntity;
 import br.ufc.great.tsd.entity.PictureEntity;
 import br.ufc.great.tsd.entity.UsersEntity;
+import br.ufc.great.tsd.http.Person;
+import br.ufc.great.tsd.http.Picture;
+import br.ufc.great.tsd.http.Posts;
 import br.ufc.great.tsd.service.PersonService;
 import br.ufc.great.tsd.service.PictureService;
 import br.ufc.great.tsd.service.UsersService;
 import br.ufc.great.tsd.util.Constantes;
 import br.ufc.great.tsd.util.FileSaver;
 import br.ufc.great.tsd.util.ManipuladorDatas;
+import br.ufc.great.tsd.util.Message;
 
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -33,8 +48,96 @@ public class FileUploadResource extends ServerResource {
 	private PersonService personService = new PersonService();
 	private PictureService pictureService = new PictureService();
 	private FileSaver fileSaver = new FileSaver(); 
+	private String id;
+	private String userId;
+	private String personId;
+	private MultipartFile files;
 
+    @Override
+    public void doInit() {
+        this.id = getAttribute("id");
+        this.userId = getAttribute("userId");
+        this.personId = getAttribute("personId");
+        this.files = null;
+    }
+    
+    private Representation httpSuccess() {
+        // FIXME StringRepresentation is probably not the right choice as we aren't returning a body
+        return new StringRepresentation("200");
+    }
+	
+    @Get("json")
+    public String toString() {
+    	Gson gson = new Gson();
+    	String json = null; 
+    	String jsonMessage;
+    	Message message = new Message();
+    	
+    	if (id != null && listMyPictures(Long.valueOf(id)).size() > 0) {
+    		//pega os dados da pessoa e retorna a lista de pictures, em formato JSON, da pessoa
+    		List<Picture> pictures = new ArrayList<Picture>();
+    		
+    		for (PictureEntity elemento : listMyPictures(Long.valueOf(id))) {
+    			Picture picture = new Picture();
+    			picture.setId(elemento.getId());
+    			picture.setName(elemento.getName());
+    			picture.setPath(elemento.getPath());
+    			//set person
+    			Person person = new Person();
+    			if (elemento.getPerson() != null) {
+        			person.setId(elemento.getPerson().getId());
+        			picture.setPerson(person);
+    			}    			
+    			//set post
+    			Posts post = new Posts();
+    			if (elemento.getPost() != null) {
+        			post.setId(elemento.getPost().getId());
+        			picture.setPost(post);    				
+    			}
+    			picture.setSystemName(elemento.getSystemName());
+    			pictures.add(picture);
+    		}
+    		json = gson.toJson(pictures);
+    		
+    		return json;
+    	}else {
+			message.setConteudo("Erro ao exibir lista de pictures de usuário");
+			message.setId(500);
+			jsonMessage = gson.toJson(message);
+			return jsonMessage; 
+    	}    
+    	
+    }
+    
+    /**
+     * Dado o json que representa um usuário faz o upload de uma picture do mesmo
+     * @param userJson
+     * @return mensagem informando se funcionou ou não 
+     */
+    @Post
+    public Representation handleUpload(String id, Representation entity){
+    	Message message = new Message();
+    	Gson gson = new Gson();
+    	String json;
 
+//    	if (entity != null && MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+    	if (entity != null) {
+    		PictureEntity picture = new PictureEntity();
+    		this.files = (MultipartFile) entity;
+
+    		this.uploadPicture(Long.valueOf(personId), picture, files);
+    		message.setConteudo("Arquivo inserido com sucesso!");
+    		message.setId(200);
+
+    	} else {
+    		throw new ResourceException(500);
+    	}
+
+    	json = gson.toJson(message);
+    	return httpSuccess(); 
+    }
+
+    
 	//@RequestMapping("/uploads")
 	public String UploadPage() {
 		return "uploads/uploadview";
@@ -47,13 +150,13 @@ public class FileUploadResource extends ServerResource {
 	 * @return listMypictures
 	 */
 	//@RequestMapping("/upload/person/{id}/picture")
-	public String listMyPictures(Long id) {
+	public List<PictureEntity> listMyPictures(Long id) {
 		PersonEntity person = this.personService.get(id);
 		
 		if (person.getPictures().size() == 0) {
 			//ra.addFlashAttribute("errorFlash", "Você precisa cadastrar pelo menos uma imagem!");
 			//redireciona para o formulário para adicionar uma nova foto
-			return "redirect:/person/" + id + "/select/picture"; 
+			return null; 
 		}
 		
 		List<PictureEntity> list = person.getPictures();
@@ -61,7 +164,7 @@ public class FileUploadResource extends ServerResource {
 		//Expõe a url do bucket
 		//model.addAttribute("s3awsurl", new Constantes().s3awsurl);
 		
-		return "/uploads/listMyPictures";
+		return list;
 	}
 	
 	/**
@@ -165,7 +268,7 @@ public class FileUploadResource extends ServerResource {
 
 		return "uploads/formpwd";
 	}
-
+	
 	/**
 	 * Faz o upload de fotos da pessoa para seu album de fotos
 	 * @param personId id da Pessoa

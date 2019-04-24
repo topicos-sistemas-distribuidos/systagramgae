@@ -39,7 +39,7 @@ public class DemoServer extends Application {
         router.attach("/person/{personLogged}/post/{postId}/likes", PersonResource.class);
         router.attach("/person/{id}/post/search", PersonResource.class);
         
-        router.attach("/upload/person/{id}/picture", FileUploadResource.class);
+        router.attach("/upload/person/{id}/picture", FileUploadResource.class); // lista as figuras do usuário selecionado
         router.attach("/upload/selected/image/users/{idUser}", FileUploadResource.class);
         router.attach("/upload/selected/picture/person/{personId}", FileUploadResource.class);
         

@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @XmlRootElement
-public class Post{
+public class Posts{
 	private static final long serialVersionUID = 1L;
 	private Date date;
 	private int likes=0;
@@ -23,7 +23,7 @@ public class Post{
 	private List<Comment> comments = new LinkedList<>();
 	private List<Likes> listLikes = new LinkedList<>();
 	
-	public Post() {
+	public Posts() {
 	}
 	
     private Long id;
