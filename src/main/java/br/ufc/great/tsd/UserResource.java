@@ -53,7 +53,6 @@ public class UserResource extends ServerResource {
     	//Mostrar os dados de um usuario
     	if (userId != null) {
     		Users user = new Users();
-    		
     		user = this.getUser(userId); 
     		
     		try {
@@ -71,7 +70,6 @@ public class UserResource extends ServerResource {
     	//Dado um e-mail e senha checa se o usuário existe
     	if (userEmail != null && userPassword != null) {
     		Users user = new Users();
-    		
     		user = this.getUserAutenticado(userEmail, userPassword);
     		
     		try {
@@ -89,6 +87,7 @@ public class UserResource extends ServerResource {
     	//lista todos os usuarios cadastrados
     	List<Users> users = new ArrayList<Users>();
     	users = this.getAllUsers();
+    	
     	try {
     		json = gson.toJson(users);
     	}catch(Exception je) {
@@ -158,9 +157,7 @@ public class UserResource extends ServerResource {
      * @return código http
      */
     public List<Users> getAllUsers() {
-    	
 		List<Users> users = new ArrayList<Users>();
-		
 		List<UsersEntity> listaEntityUsers = userService.getListAll();
 		
 		for (UsersEntity entity : listaEntityUsers) {
@@ -174,6 +171,7 @@ public class UserResource extends ServerResource {
 			if (entity.getPerson() != null) {
 				Person person = new Person();
 				person.setId(entity.getPerson().getId());
+				person.setName(entity.getPerson().getName());
 				user.setPerson(person);				
 			}
 			
@@ -255,7 +253,6 @@ public class UserResource extends ServerResource {
             URI uri = URI.create("/" + String.valueOf(user.getId()));
             return true;
     	}else{
-    		//throw new ServiceException(400, "Informe uma senha para o usuário", 1);
     		message.setConteudo("Informe uma senha para o usuário");
     		message.setId(400);
     		return false;
@@ -346,7 +343,6 @@ public class UserResource extends ServerResource {
                 return null;	    		
         	}    	    		
     	}else {
-    		//throw new ServiceException(404, "Usuário não existe!",1);
     		message.setId(404);
     		message.setConteudo("Usuario não existe!");
             return null;	    		

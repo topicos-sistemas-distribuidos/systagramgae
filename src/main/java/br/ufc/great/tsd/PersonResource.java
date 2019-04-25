@@ -1,11 +1,17 @@
 package br.ufc.great.tsd;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.restlet.resource.Get;
+import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import br.ufc.great.tsd.entity.CommentEntity;
 import br.ufc.great.tsd.entity.LikesEntity;
@@ -15,34 +21,261 @@ import br.ufc.great.tsd.entity.PostEntity;
 import br.ufc.great.tsd.http.Comment;
 import br.ufc.great.tsd.http.Likes;
 import br.ufc.great.tsd.http.Person;
+import br.ufc.great.tsd.http.Picture;
+import br.ufc.great.tsd.http.Posts;
+import br.ufc.great.tsd.http.Users;
 import br.ufc.great.tsd.service.CommentService;
 import br.ufc.great.tsd.service.LikesService;
 import br.ufc.great.tsd.service.PersonService;
 import br.ufc.great.tsd.service.PictureService;
 import br.ufc.great.tsd.service.PostService;
+import br.ufc.great.tsd.service.UsersService;
 import br.ufc.great.tsd.util.ManipuladorDatas;
+import br.ufc.great.tsd.util.Message;
 
 public class PersonResource extends ServerResource{
-
 	private PersonService personService = new PersonService();
 	private CommentService commentService = new CommentService();
 	private PictureService pictureService = new PictureService();
 	private PostService postService = new PostService();
 	private LikesService likesService = new LikesService();
-			
+    private UsersService userService = new UsersService();
+    
+    String personId;
+    String pictureId;
+    String id;
+    String listPosts;
+	String personLogged;
+	String postId; 
+	
+    @Override
+    public void doInit() {
+    	this.pictureId = getAttribute("pictureId");
+    	this.personId = getAttribute("personId");
+    	this.id = getAttribute("id");
+    	this.listPosts = getAttribute("listPosts");
+    	this.personLogged = getAttribute("personLogged");
+    	this.postId = getAttribute("postId");
+    }
+
+    /**
+     * Faz a busca por id de pessoa ou lista todos os usuários cadastrados
+     */
+    @Get("json")
+    public String toString() {
+    	Gson gson = new Gson();
+    	String json; 
+    	String jsonMessage;
+    	Message message = new Message();
+    	
+    	//Mostrar os dados de uma pessoa
+    	if (id != null) {
+    		Person person = new Person();
+    		person = this.getPerson(Long.valueOf(id));
+    		
+    		try {
+    			json = gson.toJson(person);
+    		}catch(Exception e) {
+    			e.printStackTrace();
+    			message.setConteudo("Erro ao exibir informação de pessoa");
+    			message.setId(500);
+    			jsonMessage = gson.toJson(message);
+    			return jsonMessage; 
+    		}
+    		return json;
+    	}
+    	
+    	//Mostrar os posts de uma pessoa
+    	if (id != null && listPosts != null) {
+    		List<Posts> myPosts = new LinkedList<>();
+    		myPosts =  this.listMyPosts(Long.valueOf(id));
+    		
+    		try {
+    			json = gson.toJson(myPosts);
+    		}catch(Exception e) {
+    			e.printStackTrace();
+    			message.setConteudo("Erro ao exibir os posts da Pessoa selecionada");
+    			message.setId(500);
+    			jsonMessage = gson.toJson(message);
+    			return jsonMessage; 
+    		}
+    		return json;
+    	}
+    	
+    	//Dada uma picture selecionada faz a publicacao da mesma
+    	if (personId != null && pictureId != null) {
+    		this.createPost(Long.valueOf(pictureId), Long.valueOf(personId));
+    		
+    		message.setConteudo("Post Criado com sucesso!");
+			message.setId(200);
+			json = gson.toJson(message);
+			return json; 
+    	}
+    	
+    	//Lista todas as pessoas
+    	List<Person> people = new LinkedList<Person>();
+    	people = this.getAllPeople();
+    	
+    	try {
+    		json = gson.toJson(people);
+    	}catch (Exception e){
+			e.printStackTrace();
+			message.setConteudo("Erro ao exibir informação de pessoa");
+			message.setId(500);
+			jsonMessage = gson.toJson(message);
+			return jsonMessage;     		
+    	}
+    	
+		return json;
+    }
+	
+    @Post
+    public String saveCommentOnPost(String jsonComment) {
+    	Message message = new Message();
+    	Gson gson = new Gson();
+    	String json;
+    	
+    	Type commentType = new TypeToken<Comment>(){}.getType();
+    	//recupera o json que representa comentario
+    	Comment comment = gson.fromJson(jsonComment, commentType);
+    	
+    	CommentEntity myComment = new CommentEntity();
+    	myComment.setDate(comment.getDate());
+    	myComment.setDescription(comment.getDescription());
+    	//Pessoa que fez o comentário
+    	if (comment.getPerson() != null) {
+    		PersonEntity personComment = new PersonEntity();
+    		personComment.setId(comment.getPerson().getId());
+    		personComment.setName(comment.getPerson().getName());
+        	myComment.setPerson(personComment);    		
+    	}
+
+    	Long personLogged = Long.valueOf(this.personLogged);
+    	
+    	try {
+    		this.saveCommentInSelectedPost(myComment, Long.valueOf(postId), personLogged);
+    		message.setConteudo("Comentário inserido com sucesso!");
+    		message.setId(200);    		
+    	}catch (Exception e) {
+    		message.setConteudo("Erro ao inserir comentário no post");
+    		message.setId(500);    		
+		}
+    	
+    	json = gson.toJson(message);
+    	return json; 
+    }
+    
+    @Post
+    public String saveLikeOnPost(String jsonLike) {
+    	Message message = new Message();
+    	Gson gson = new Gson();
+    	String json;
+    	
+    	Type likeType = new TypeToken<Likes>(){}.getType();
+    	//recupera o json que representa um like
+    	Likes like =  gson.fromJson(jsonLike, likeType);
+    	
+    	LikesEntity myLike = new LikesEntity();
+    	myLike.setDate(like.getDate());
+    	myLike.setDescription(like.getDescription());
+    	myLike.setMylike(like.isMylike());
+    	if (like.getPerson() != null) {
+    		PersonEntity personLike = new PersonEntity();
+    		personLike.setId(like.getPerson().getId());
+    		personLike.setName(like.getPerson().getName());
+        	myLike.setPerson(personLike);    		
+    	}
+    	if (like.getPost() != null) {
+    		PostEntity postLike = new PostEntity();
+    		postLike.setId(like.getPost().getId());
+        	myLike.setPost(postLike);
+    	}
+
+    	try {
+    		this.saveLikeInSelectedPost(myLike, Long.valueOf(postId), Long.valueOf(personLogged));
+    		message.setConteudo("Like inserido com sucesso!");
+    		message.setId(200);    		
+    	}catch (Exception e) {
+    		message.setConteudo("Erro ao inserir Like no post");
+    		message.setId(500);    		
+		}
+    	
+    	json = gson.toJson(message);
+    	return json; 
+    	
+    }
+    
 	/**
 	 * Lista todas as pessoas cadastradas no sistema
 	 * @param model
 	 * @return página com a lista de pessoas cadastradas
 	 */
     //@RequestMapping(value="/person", method = RequestMethod.GET)
-    public List<Person> index() {
+    public List<Person> getAllPeople() {
     	List<Person> people = new ArrayList<Person>();
-    	
     	List<PersonEntity> list = this.personService.getAll();
-    	//TODO carregar a lista de pessoas em people
+    	
+    	for (PersonEntity elemento : list) {
+    		Person person = new Person();
+    		
+    		person.setId(elemento.getId());
+    		person.setName(elemento.getName());
+    		Users user = new Users();
+    		user.setId(elemento.getUser().getId());
+    		user.setUsername(elemento.getUser().getUsername());
+    		user.setEmail(elemento.getUser().getEmail());
+    		person.setUser(user);
+    		people.add(person);
+    	}
     	
         return people;
+    }
+    
+    public Person getPerson(Long id) {
+    	PersonEntity personEntity = this.personService.get(id);
+    	Person person = new Person();
+    	
+    	person.setId(personEntity.getId());
+    	person.setCep(personEntity.getCep());
+    	
+    	if(personEntity.getComments() != null) {
+        	//person.setComments(personEntity.getComments());    		
+    	}
+
+    	person.setAddress(personEntity.getAddress());
+    	person.setLatitude(personEntity.getLatitude());
+    	person.setLongitude(personEntity.getLongitude());
+    	
+    	if (personEntity.getLikes() != null) {
+        	//TODO: person.setListLikes(personEntity.getLikes());    		
+    	}
+
+    	person.setName(personEntity.getName());
+    	
+    	if (personEntity.getPictures() != null) {
+        	//TODO: person.setPictures(personEntity.getPictures());    		
+    	}
+
+    	if (personEntity.getPosts() != null) {
+    		List<Posts> posts = new LinkedList<>(); 
+    		for (PostEntity elemento : personEntity.getPosts()) {
+    			Posts post = new Posts();
+    			post.setId(elemento.getId());
+    			post.setDate(elemento.getDate());
+    		}
+        	person.setPosts(posts);    		
+    	}
+
+    	person.setState(personEntity.getState());
+    	
+    	if (personEntity.getUser() != null) {
+    		Users user = new Users();
+    		user.setId(personEntity.getUser().getId());
+    		user.setUsername(personEntity.getUser().getUsername());
+    		user.setEmail(personEntity.getUser().getEmail());
+    	}
+
+    	return person; 
     }
     
     /**
@@ -52,16 +285,26 @@ public class PersonResource extends ServerResource{
      */
     //@RequestMapping(value="/person/{id}/comment")
     public List<Comment> listMyComments(Long id) {
-    	
     	List<Comment> myComments = new ArrayList<Comment>();
-    	
     	PersonEntity person = personService.get(id);
     	
     	List<CommentEntity> list = person.getComments();
-    	//TODO carregar a lista de comentarios em myComents
+    	
+    	for (CommentEntity elemento : list) {
+    		Comment myComment = new Comment();
+    		myComment.setDate(elemento.getDate());
+    		myComment.setDescription(elemento.getDescription());
+    		myComment.setId(elemento.getId());
+			Person person1 = new Person();
+    		if (elemento.getPerson() != null) {
+    			person.setId(elemento.getPerson().getId());
+    			person.setName(elemento.getPerson().getName());
+    		}
+    		myComment.setPerson(person1);
+    		myComments.add(myComment);
+    	}
     	
         return myComments;
-
     }
 
     /**
@@ -112,37 +355,6 @@ public class PersonResource extends ServerResource{
     	//TODO carregar a lista de likes em allLikes
     	
     	return allLikes;
-    }
-
-    /**
-     * Dada uma pessoa e um novo comentário mostra o formulário para inserir comentário
-     * @param id Id da pessoa
-     * @param model Model
-     * @return formComment.html
-     */
-    //@RequestMapping(value="/person/{id}/comment/add")
-    public String addMyComment(Long id) {
-    	
-    	PersonEntity person = this.personService.get(id);
-    	List<CommentEntity> comments = person.getComments();
-    	    	
-    	return "person/formComment";
-    }
-
-    /**
-     * Dada uma pessoa e um novo like mostra o formulário para inserir comentário
-     * @param id Id da pessoa
-     * @param model Model
-     * @return formLike.html
-     */
-    //@RequestMapping(value="/person/{id}/likes/add")
-    public String addMyLike(Long id) {
-    	
-    	PersonEntity person = this.personService.get(id);
-    	
-    	List<LikesEntity> likes = person.getLikes();
-    	    	
-    	return "person/formLikes";
     }
 
     /**
@@ -244,21 +456,86 @@ public class PersonResource extends ServerResource{
 	 * @return listMyPosts.html
 	 */
 	//@RequestMapping("/person/{id}/post")
-	public String listMyPosts(Long id) {
+	public List<Posts> listMyPosts(Long id) {
 		PersonEntity person = this.personService.get(id);
 		
 		if (person.getPosts().size() == 0) {
-			//ra.addFlashAttribute("errorFlash", "O usuário " + person.getName() + " ainda não possui posts!");
-			return "redirect:/users/list";
+			return null;
 		}
+
+		List<Posts> myPosts = new LinkedList<Posts>();
 		
 		List<PostEntity> list = person.getPosts();
 		
+		for (PostEntity elemento : list) {
+			Posts post = new Posts();
+			
+			if (elemento.getComments() != null) {
+				//post.setComments(elemento.getComments());		
+				List<Comment> comments = new LinkedList<Comment>();
+				for (CommentEntity comment : elemento.getComments()) {
+					Comment myComment = new Comment();
+					myComment.setDate(comment.getDate());
+					myComment.setDescription(comment.getDescription());
+					myComment.setId(comment.getId());
+					
+					Person myPerson1 = new Person();
+					if (comment.getPerson() != null) {
+						myPerson1.setAddress(comment.getPerson().getAddress());
+						myPerson1.setName(comment.getPerson().getName());
+						myPerson1.setId(comment.getPerson().getId());
+						myComment.setPerson(myPerson1);
+					}
+					comments.add(myComment);
+				}
+				post.setComments(comments);
+			}
+			
+			post.setDate(elemento.getDate());
+			post.setId(elemento.getId());
+			post.setLikes(elemento.getLikes());
+			
+			if (elemento.getListLikes() != null) {
+				List<Likes> likes = new LinkedList<>();
+				
+				for (LikesEntity like : elemento.getListLikes()) {
+					Likes myLike = new Likes();
+					myLike.setDate(like.getDate());
+					myLike.setDescription(like.getDescription());
+					myLike.setMylike(like.isMylike());
+					
+					Person myPerson3 = new Person();
+					if (like.getPerson() != null) {
+						myPerson3.setAddress(like.getPerson().getAddress());
+						myPerson3.setName(like.getPerson().getName());
+						myPerson3.setId(like.getPerson().getId());
+						myLike.setPerson(myPerson3);
+					}
+					likes.add(myLike);
+				}
+				post.setListLikes(likes);				
+			}
 
-		CommentEntity comment = new CommentEntity();
-		LikesEntity likes = new LikesEntity();
-		
-		return "/person/listMyPosts";
+			if (elemento.getPerson() != null) {
+				Person myPerson = new Person();
+				myPerson.setAddress(elemento.getPerson().getAddress());
+				myPerson.setName(elemento.getPerson().getName());
+				myPerson.setId(elemento.getId());
+				post.setPerson(myPerson);				
+			}
+			
+			if (elemento.getPicture() != null) {
+				Picture picture = new Picture();
+				picture.setId(elemento.getPicture().getId());
+				picture.setName(elemento.getPicture().getName());
+				picture.setPath(elemento.getPicture().getPath());
+				picture.setSystemName(elemento.getPicture().getSystemName());
+				post.setPicture(picture);				
+			}
+
+			myPosts.add(post); 
+		}
+		return myPosts;
 	}
 
 	/**
@@ -270,7 +547,6 @@ public class PersonResource extends ServerResource{
 	 */
 	//@RequestMapping("/person/{personId}/picture/{pictureId}/post")
 	public String createPost(Long pictureId, Long personId) {
-		
 		PictureEntity picture = this.pictureService.get(pictureId);
 		PersonEntity person = this.personService.get(personId);
 		
@@ -289,22 +565,14 @@ public class PersonResource extends ServerResource{
 		//Salva a data corrente no post
 		post.setDate(ManipuladorDatas.getDate());
 		
-		//Carrega os dados do usuário logado
-		
 		//Salva o post no repositório de posts
 		this.postService.save(post);
 		//Atualiza pessoa com o post
 		this.personService.update(person);
 		//Atualiza foto com o post
 		this.pictureService.update(picture);
-		
-		List<PostEntity> list = person.getPosts();
-		
-		CommentEntity comment = new CommentEntity();
-		
-		//ra.addFlashAttribute("successFlash", "Post da imagem criado com sucesso!");
-		
-		return "redirect:/person/" + person.getId() + "/post"; 
+				
+		return "Post criado com sucesso!"; 
 	}
 	
 	/*
@@ -325,8 +593,7 @@ public class PersonResource extends ServerResource{
 	 * redirecione para o listMyPost do usuário selecionado com todas as atualizaçòes
 	 */ 
 	//@RequestMapping(value="/person/{personLogged}/post/{postId}/comment", method = RequestMethod.POST)
-	public String saveCommentInSelectedPost(CommentEntity comment, Long postId, Long personLogged) {
-
+	public List<PostEntity> saveCommentInSelectedPost(CommentEntity comment, Long postId, Long personLogged) {
 		//Pega o Post selecionado
 		PostEntity post = this.postService.get(postId);
 		//Pega o Dono do post
@@ -359,12 +626,8 @@ public class PersonResource extends ServerResource{
 		
 		//Gera a lista de posts atualizada com o novo comentário
 		List<PostEntity> list = personPost.getPosts();
-		
-		CommentEntity newComment = new CommentEntity();
-		
-		//ra.addFlashAttribute("successFlash", "O comentário foi salvo com sucesso.");
-		
-		return "redirect:/person/"+ personPost.getId() + "/post";
+				
+		return list;
 	}
 
 	/*
@@ -386,7 +649,6 @@ public class PersonResource extends ServerResource{
 	 */ 
 	//@RequestMapping(value="/person/{personLogged}/post/{postId}/likes", method = RequestMethod.POST)
 	public String saveLikeInSelectedPost(LikesEntity like, Long postId, Long personLogged) {
-
 		//Pega o Post selecionado
 		PostEntity post = this.postService.get(postId);
 		//Pega o Dono do post
@@ -397,7 +659,7 @@ public class PersonResource extends ServerResource{
 
 		//Recupera a data corrente do sistema
 		new ManipuladorDatas();
-		//Salva a data corrente no comment
+		//Salva a data corrente no like
 		like.setDate(ManipuladorDatas.getDate());
 
 		//Adiciona o like no repositorio
@@ -419,16 +681,8 @@ public class PersonResource extends ServerResource{
 
 		//Atualiza o post
 		this.postService.update(post);
-		
-		//Gera a lista de posts atualizada com o novo like
-		List<PostEntity> list = personPost.getPosts();
-		
-		CommentEntity newComment = new CommentEntity();
-		LikesEntity newLike = new LikesEntity();
-						
-		//ra.addFlashAttribute("successFlash", "O like foi salvo com sucesso.");
-		
-		return "redirect:/person/"+ personPost.getId() + "/post";
+								
+		return "O like foi salvo com sucesso.";
 	}
 
 

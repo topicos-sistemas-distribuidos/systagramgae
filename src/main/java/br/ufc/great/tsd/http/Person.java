@@ -16,6 +16,10 @@ public class Person{
 	private double latitude=0;
 	private double longitude=0;
     private Long id;
+	private List<Comment> comments = new LinkedList<>();
+	private List<Picture> pictures = new LinkedList<>();
+	private List<Posts> posts = new LinkedList<>();
+	private List<Likes> listLikes = new LinkedList<>();
 
     public Long getId() {
         return this.id;
@@ -25,13 +29,6 @@ public class Person{
         this.id = id;
     }
 	
-	private List<Comment> comments = new LinkedList<>();
-	
-	private List<Picture> pictures = new LinkedList<>();
-	
-	private List<Posts> posts = new LinkedList<>();
-	
-	private List<Likes> listLikes = new LinkedList<>();
 
 	public Person() {
 	}

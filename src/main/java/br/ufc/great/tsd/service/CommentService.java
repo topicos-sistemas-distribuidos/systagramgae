@@ -21,17 +21,19 @@ public class CommentService{
 	}
 
 	public List<CommentEntity> getAll() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void update(CommentEntity comment) {
-		// TODO Auto-generated method stub
-		
+		return this.entityManager.createQuery("SELECT c FROM CommentEntity c ORDER BY c.id").getResultList();
 	}
 
 	public void save(CommentEntity comment) {
-		// TODO Auto-generated method stub
-		
+		this.entityManager.getTransaction().begin();
+		this.entityManager.persist(comment);
+		this.entityManager.getTransaction().commit();		
 	}
+	
+	public void update(CommentEntity comment) {
+		this.entityManager.getTransaction().begin();
+		this.entityManager.merge(comment);
+		this.entityManager.getTransaction().commit();		
+	}
+
 }

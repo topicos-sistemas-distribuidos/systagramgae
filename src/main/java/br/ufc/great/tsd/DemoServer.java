@@ -33,7 +33,7 @@ public class DemoServer extends Application {
         router.attach("/person/{personId}/comment/{commentId}/edit", PersonResource.class);
         router.attach("/person/{personId}/select/picture", PersonResource.class);
         router.attach("/person/{personId}/picture/{pictureId}/edit", PersonResource.class);
-        router.attach("/person/{id}/post", PersonResource.class);
+        router.attach("/person/{id}/post/{listPosts}", PersonResource.class);
         router.attach("/person/{personId}/picture/{pictureId}/post", PersonResource.class);
         router.attach("/person/{personLogged}/post/{postId}/comment", PersonResource.class);
         router.attach("/person/{personLogged}/post/{postId}/likes", PersonResource.class);

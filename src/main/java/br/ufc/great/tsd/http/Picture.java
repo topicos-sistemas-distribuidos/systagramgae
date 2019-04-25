@@ -10,9 +10,7 @@ public class Picture{
 	private String name;
 	private String path;
 	private String systemName;
-	
 	private Person person;
-	
 	private Posts post;
 	
 	public Picture() {

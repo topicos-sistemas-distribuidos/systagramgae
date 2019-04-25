@@ -86,6 +86,7 @@ public class FileUploadResource extends ServerResource {
     			Person person = new Person();
     			if (elemento.getPerson() != null) {
         			person.setId(elemento.getPerson().getId());
+        			person.setName(elemento.getPerson().getName());
         			picture.setPerson(person);
     			}    			
     			//set post
@@ -98,7 +99,6 @@ public class FileUploadResource extends ServerResource {
     			pictures.add(picture);
     		}
     		json = gson.toJson(pictures);
-    		
     		return json;
     	}else {
 			message.setConteudo("Erro ao exibir lista de pictures de usuário");
@@ -137,12 +137,7 @@ public class FileUploadResource extends ServerResource {
     	return httpSuccess(); 
     }
 
-    
-	//@RequestMapping("/uploads")
-	public String UploadPage() {
-		return "uploads/uploadview";
-	}
-	
+    	
 	/**
 	 * Carrega a página contendo todas a fotos do usuário
 	 * @param id Id da pessoa
@@ -154,16 +149,11 @@ public class FileUploadResource extends ServerResource {
 		PersonEntity person = this.personService.get(id);
 		
 		if (person.getPictures().size() == 0) {
-			//ra.addFlashAttribute("errorFlash", "Você precisa cadastrar pelo menos uma imagem!");
-			//redireciona para o formulário para adicionar uma nova foto
 			return null; 
 		}
 		
 		List<PictureEntity> list = person.getPictures();
-		
-		//Expõe a url do bucket
-		//model.addAttribute("s3awsurl", new Constantes().s3awsurl);
-		
+				
 		return list;
 	}
 	
@@ -398,11 +388,6 @@ public class FileUploadResource extends ServerResource {
 
 		File serverFile = new File(uploadFilePath + FileSystems.getDefault().getSeparator() + imageName + ".png");
 		return Files.readAllBytes(serverFile.toPath());
-	}
-
-	//@RequestMapping(value="/viewFile")
-	public String viewFile() {
-		return "viewfileuploaded";
 	}
 
 	/**

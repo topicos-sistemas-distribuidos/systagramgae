@@ -20,19 +20,19 @@ public class LikesService{
 		this.entityManager = this.entityManagerFactory.createEntityManager();
 	}
 
-
 	public List<LikesEntity> getAll() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.entityManager.createQuery("SELECT l FROM LikesEntity l ORDER BY l.id").getResultList();
 	}
 
 	public void save(LikesEntity like) {
-		// TODO Auto-generated method stub
-		
+		this.entityManager.getTransaction().begin();
+		this.entityManager.persist(like);
+		this.entityManager.getTransaction().commit();		
 	}
 
 	public void update(LikesEntity like) {
-		// TODO Auto-generated method stub
-		
+		this.entityManager.getTransaction().begin();
+		this.entityManager.merge(like);
+		this.entityManager.getTransaction().commit();		
 	}
 }

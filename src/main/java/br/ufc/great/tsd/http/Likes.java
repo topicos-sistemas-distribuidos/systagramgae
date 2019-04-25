@@ -12,7 +12,6 @@ public class Likes{
 	private String description;
 	private Person person;
 	private Posts post;
-	
 	private Date date;
 	private boolean mylike;
 	
