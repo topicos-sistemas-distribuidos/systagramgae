@@ -7,17 +7,14 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import br.ufc.great.tsd.entity.LikesEntity;
+import br.ufc.great.tsd.util.GlobalEntityManager;
 
 public class LikesService{
 	
-	private final EntityManagerFactory entityManagerFactory;
+	EntityManager entityManager;
 	
-	private final EntityManager entityManager;
-	
-	public LikesService(){
-		/*CRIANDO O NOSSO EntityManagerFactory COM AS PORPRIEDADOS DO ARQUIVO persistence.xml */
-		this.entityManagerFactory = Persistence.createEntityManagerFactory("persistence_unit_db_estudo");
-		this.entityManager = this.entityManagerFactory.createEntityManager();
+	public LikesService(GlobalEntityManager myEntityManager){
+		this.entityManager = myEntityManager.entityManager;
 	}
 
 	public List<LikesEntity> getAll() {

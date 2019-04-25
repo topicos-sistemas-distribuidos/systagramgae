@@ -37,22 +37,29 @@ import br.ufc.great.tsd.service.PictureService;
 import br.ufc.great.tsd.service.UsersService;
 import br.ufc.great.tsd.util.Constantes;
 import br.ufc.great.tsd.util.FileSaver;
+import br.ufc.great.tsd.util.GlobalEntityManager;
 import br.ufc.great.tsd.util.ManipuladorDatas;
 import br.ufc.great.tsd.util.Message;
 
 import org.springframework.mock.web.MockMultipartFile;
 
 public class FileUploadResource extends ServerResource {
-
-	private UsersService userService = new UsersService();
-	private PersonService personService = new PersonService();
-	private PictureService pictureService = new PictureService();
+	private GlobalEntityManager myEntityManager = new GlobalEntityManager();
+	private UsersService userService;
+	private PersonService personService;
+	private PictureService pictureService;
 	private FileSaver fileSaver = new FileSaver(); 
 	private String id;
 	private String userId;
 	private String personId;
 	private MultipartFile files;
 
+	public FileUploadResource() {
+		userService = new UsersService(myEntityManager);
+		personService = new PersonService(myEntityManager);
+		pictureService = new PictureService(myEntityManager);		// TODO Auto-generated constructor stub
+	}
+	
     @Override
     public void doInit() {
         this.id = getAttribute("id");

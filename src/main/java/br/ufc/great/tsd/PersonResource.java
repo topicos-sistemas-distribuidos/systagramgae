@@ -30,16 +30,18 @@ import br.ufc.great.tsd.service.PersonService;
 import br.ufc.great.tsd.service.PictureService;
 import br.ufc.great.tsd.service.PostService;
 import br.ufc.great.tsd.service.UsersService;
+import br.ufc.great.tsd.util.GlobalEntityManager;
 import br.ufc.great.tsd.util.ManipuladorDatas;
 import br.ufc.great.tsd.util.Message;
 
 public class PersonResource extends ServerResource{
-	private PersonService personService = new PersonService();
-	private CommentService commentService = new CommentService();
-	private PictureService pictureService = new PictureService();
-	private PostService postService = new PostService();
-	private LikesService likesService = new LikesService();
-    private UsersService userService = new UsersService();
+	private GlobalEntityManager myEntityManager = new GlobalEntityManager();
+	private PersonService personService;
+	private CommentService commentService;
+	private PictureService pictureService;
+	private PostService postService;
+	private LikesService likesService;
+    private UsersService userService;
     
     String personId;
     String pictureId;
@@ -47,6 +49,16 @@ public class PersonResource extends ServerResource{
     String listPosts;
 	String personLogged;
 	String postId; 
+	String type;
+	
+	public PersonResource(){
+		this.personService = new PersonService(myEntityManager);
+		this.commentService = new CommentService(myEntityManager);
+		this.pictureService = new PictureService(myEntityManager);
+		this.postService = new PostService(myEntityManager);
+		this.likesService = new LikesService(myEntityManager);
+		this.userService = new UsersService(myEntityManager);
+	}
 	
     @Override
     public void doInit() {
@@ -56,6 +68,7 @@ public class PersonResource extends ServerResource{
     	this.listPosts = getAttribute("listPosts");
     	this.personLogged = getAttribute("personLogged");
     	this.postId = getAttribute("postId");
+    	this.type = getAttribute("type");
     }
 
     /**
@@ -64,7 +77,7 @@ public class PersonResource extends ServerResource{
     @Get("json")
     public String toString() {
     	Gson gson = new Gson();
-    	String json; 
+    	String json=""; 
     	String jsonMessage;
     	Message message = new Message();
     	
@@ -112,24 +125,41 @@ public class PersonResource extends ServerResource{
 			return json; 
     	}
     	
-    	//Lista todas as pessoas
-    	List<Person> people = new LinkedList<Person>();
-    	people = this.getAllPeople();
-    	
-    	try {
-    		json = gson.toJson(people);
-    	}catch (Exception e){
-			e.printStackTrace();
-			message.setConteudo("Erro ao exibir informação de pessoa");
-			message.setId(500);
-			jsonMessage = gson.toJson(message);
-			return jsonMessage;     		
+    	if (personId==null && pictureId==null && id==null && listPosts==null) {
+        	//Lista todas as pessoas
+        	List<Person> people = new LinkedList<Person>();
+        	people = this.getAllPeople();
+        	
+        	try {
+        		json = gson.toJson(people);
+        	}catch (Exception e){
+    			e.printStackTrace();
+    			message.setConteudo("Erro ao exibir informação de pessoa");
+    			message.setId(500);
+    			jsonMessage = gson.toJson(message);
+    			return jsonMessage;     		
+        	}
+    		
     	}
     	
 		return json;
     }
 	
     @Post
+    public String saveContent(String jsonContent) {
+    	String jsonResult = null;
+    	
+    	if (type.equals("comment")) {
+    		jsonResult = saveCommentOnPost(jsonContent);
+    	}
+    	
+    	if (type.equals("like")) {
+    		jsonResult = saveLikeOnPost(jsonContent);
+    	}
+    	
+    	return jsonResult;
+    }
+    
     public String saveCommentOnPost(String jsonComment) {
     	Message message = new Message();
     	Gson gson = new Gson();
@@ -165,7 +195,6 @@ public class PersonResource extends ServerResource{
     	return json; 
     }
     
-    @Post
     public String saveLikeOnPost(String jsonLike) {
     	Message message = new Message();
     	Gson gson = new Gson();
@@ -202,7 +231,6 @@ public class PersonResource extends ServerResource{
     	
     	json = gson.toJson(message);
     	return json; 
-    	
     }
     
 	/**
@@ -368,8 +396,8 @@ public class PersonResource extends ServerResource{
     public String saveMyComment(Long id, CommentEntity comment) {
     	
     	PersonEntity person = this.personService.get(id);
-    	
-    	person.addComment(comment, person);
+    	comment.setPerson(person);
+    	person.addComment(comment);
     	
     	//Atualiza a pessoa com o novo comentario
     	this.personService.update(person);
@@ -390,7 +418,7 @@ public class PersonResource extends ServerResource{
     	
     	PersonEntity person = this.personService.get(id);
     	
-    	person.addLike(like, person);
+    	person.addLike(like);
     	//Atualiza a pessoa com o novo like
     	this.personService.update(person);
     	//ra.addFlashAttribute("successFlash", "Like salvo com sucesso.");
@@ -596,34 +624,29 @@ public class PersonResource extends ServerResource{
 	public List<PostEntity> saveCommentInSelectedPost(CommentEntity comment, Long postId, Long personLogged) {
 		//Pega o Post selecionado
 		PostEntity post = this.postService.get(postId);
+		
 		//Pega o Dono do post
 		PersonEntity personPost = post.getPerson();
 		//Pessoa que vai fazer o comentário no post selecionado
 		PersonEntity personComment = this.personService.get(personLogged);
 
-		//Recupera a data corrente do sistema
-		new ManipuladorDatas();
-		//Salva a data corrente no comment
-		comment.setDate(ManipuladorDatas.getDate());
-
+		//salva a pessoa que fez o comentario
+		comment.setPerson(personComment);
 		//Adiciona o comment no repositorio
 		this.commentService.save(comment);
 
 		//Adiciona o comment no personComment
-		personComment.addComment(comment, personComment);
-		
-		//Atualiza o comment
-		this.commentService.update(comment);
+		personComment.addComment(comment);
 
+		//Adiciona o comment no post
+		post.addComment(comment);
+		
 		//Atualiza o personComment
 		this.personService.update(personComment);
 		
-		//Adiciona o comment no post
-		post.addComment(comment);
-
 		//Atualiza o post
 		this.postService.update(post);
-		
+				
 		//Gera a lista de posts atualizada com o novo comentário
 		List<PostEntity> list = personPost.getPosts();
 				
@@ -653,7 +676,6 @@ public class PersonResource extends ServerResource{
 		PostEntity post = this.postService.get(postId);
 		//Pega o Dono do post
 		PersonEntity personPost = post.getPerson();
-		
 		//Pessoa que vai fazer o like no post selecionado
 		PersonEntity personLike = this.personService.get(personLogged);
 
@@ -661,24 +683,21 @@ public class PersonResource extends ServerResource{
 		new ManipuladorDatas();
 		//Salva a data corrente no like
 		like.setDate(ManipuladorDatas.getDate());
-
+		like.setPost(post);
+		like.setPerson(personLike);
+		
 		//Adiciona o like no repositorio
 		this.likesService.save(like);
 
 		//Adiciona o like no personLike
-		personLike.addLike(like, personLike);
-		
-		like.setPost(post);
-		
-		//Atualiza o like
-		this.likesService.update(like);
+		personLike.addLike(like);
+				
+		//Adiciona o like no post
+		post.addLike(like);
 
 		//Atualiza o personLike
 		this.personService.update(personLike);
 		
-		//Adiciona o like no post
-		post.addLike(like);
-
 		//Atualiza o post
 		this.postService.update(post);
 								

@@ -9,17 +9,13 @@ import javax.persistence.Persistence;
 import br.ufc.great.tsd.entity.PersonEntity;
 import br.ufc.great.tsd.entity.PictureEntity;
 import br.ufc.great.tsd.entity.UsersEntity;
+import br.ufc.great.tsd.util.GlobalEntityManager;
 
 public class PictureService{
-
-	private final EntityManagerFactory entityManagerFactory;
+	EntityManager entityManager;
 	
-	private final EntityManager entityManager;
-	
-	public PictureService(){
-		/*CRIANDO O NOSSO EntityManagerFactory COM AS PORPRIEDADOS DO ARQUIVO persistence.xml */
-		this.entityManagerFactory = Persistence.createEntityManagerFactory("persistence_unit_db_estudo");
-		this.entityManager = this.entityManagerFactory.createEntityManager();
+	public PictureService(GlobalEntityManager myEntityManager){
+		this.entityManager = myEntityManager.entityManager;
 	}
 
 	public PictureEntity get(Long pictureId) {

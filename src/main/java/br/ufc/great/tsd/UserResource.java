@@ -20,24 +20,25 @@ import br.ufc.great.tsd.http.Person;
 import br.ufc.great.tsd.http.Users;
 import br.ufc.great.tsd.service.UsersService;
 import br.ufc.great.tsd.util.GeradorSenha;
+import br.ufc.great.tsd.util.GlobalEntityManager;
 import br.ufc.great.tsd.util.Message;
 
 public class UserResource extends ServerResource {
     String userName;
-    String userEmail;
-    String userPassword;
+    String email;
+    String senha;
     Object user;
     String userId; 
     
-    UsersService userService = new UsersService();
+    UsersService userService = new UsersService(new GlobalEntityManager());
     
     @Override
     public void doInit() {
         this.userName = getAttribute("user");
         this.userId = getAttribute("id");
         this.user = null; // Could be a lookup to a domain object.
-        this.userEmail = getAttribute("email");
-        this.userPassword = getAttribute("password");
+        this.email = getAttribute("email");
+        this.senha = getAttribute("senha");
     }
 
     /**
@@ -46,7 +47,7 @@ public class UserResource extends ServerResource {
     @Get("json")
     public String toString() {
     	Gson gson = new Gson();
-    	String json; 
+    	String json=""; 
     	String jsonMessage;
     	Message message = new Message();
     	
@@ -68,9 +69,9 @@ public class UserResource extends ServerResource {
     	}
     	
     	//Dado um e-mail e senha checa se o usuário existe
-    	if (userEmail != null && userPassword != null) {
+    	if (email != null && senha != null) {
     		Users user = new Users();
-    		user = this.getUserAutenticado(userEmail, userPassword);
+    		user = this.getUserAutenticado(email, senha);
     		
     		try {
     			json = gson.toJson(user);
@@ -85,20 +86,24 @@ public class UserResource extends ServerResource {
     	}
     	
     	//lista todos os usuarios cadastrados
-    	List<Users> users = new ArrayList<Users>();
-    	users = this.getAllUsers();
-    	
-    	try {
-    		json = gson.toJson(users);
-    	}catch(Exception je) {
-			je.printStackTrace();
-			message.setConteudo("Erro ao exibir informação de lista de usuários");
-			message.setId(500);
-			jsonMessage = gson.toJson(message);
-			return jsonMessage; 
+    	if (userId == null && email == null && senha==null) {
+        	List<Users> users = new ArrayList<Users>();
+        	users = this.getAllUsers();
+        	
+        	try {
+        		json = gson.toJson(users);
+        	}catch(Exception je) {
+    			je.printStackTrace();
+    			message.setConteudo("Erro ao exibir informação de lista de usuários");
+    			message.setId(500);
+    			jsonMessage = gson.toJson(message);
+    			return jsonMessage; 
+        	}
+        	
+        	return json;    		
     	}
     	
-    	return json;
+		return json;
     }
     
     /**

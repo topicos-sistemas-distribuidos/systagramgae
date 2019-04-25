@@ -7,17 +7,13 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import br.ufc.great.tsd.entity.CommentEntity;
+import br.ufc.great.tsd.util.GlobalEntityManager;
 
 public class CommentService{
+	EntityManager entityManager;
 	
-	private final EntityManagerFactory entityManagerFactory;
-	
-	private final EntityManager entityManager;
-	
-	public CommentService(){
-		/*CRIANDO O NOSSO EntityManagerFactory COM AS PORPRIEDADOS DO ARQUIVO persistence.xml */
-		this.entityManagerFactory = Persistence.createEntityManagerFactory("persistence_unit_db_estudo");
-		this.entityManager = this.entityManagerFactory.createEntityManager();
+	public CommentService(GlobalEntityManager myEntityManager){
+		this.entityManager = myEntityManager.entityManager;
 	}
 
 	public List<CommentEntity> getAll() {
