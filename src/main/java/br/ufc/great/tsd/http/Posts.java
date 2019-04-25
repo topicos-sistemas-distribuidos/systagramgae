@@ -14,15 +14,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @XmlRootElement
-public class Post{
+public class Posts{
 	private static final long serialVersionUID = 1L;
 	private Date date;
 	private int likes=0;
 	private Person person;
 	private Picture picture;
 	private List<Comment> comments = new LinkedList<>();
+	private List<Likes> listLikes = new LinkedList<>();
 	
-	public Post() {
+	public Posts() {
 	}
 	
     private Long id;
@@ -69,4 +70,17 @@ public class Post{
 	public void addComment(Comment comment) {
 		this.getComments().add(comment);
 	}
+
+	public void addLike(Likes likes) {
+		this.getListLikes().add(likes);
+	}
+	
+	public List<Likes> getListLikes() {
+		return listLikes;
+	}
+
+	public void setListLikes(List<Likes> listLikes) {
+		this.listLikes = listLikes;
+	}
+
 }

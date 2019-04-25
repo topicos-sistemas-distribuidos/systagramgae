@@ -6,34 +6,33 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import br.ufc.great.tsd.entity.CommentEntity;
+import br.ufc.great.tsd.entity.LikesEntity;
 
-public class CommentService{
+public class LikesService{
 	
 	private final EntityManagerFactory entityManagerFactory;
 	
 	private final EntityManager entityManager;
 	
-	public CommentService(){
+	public LikesService(){
 		/*CRIANDO O NOSSO EntityManagerFactory COM AS PORPRIEDADOS DO ARQUIVO persistence.xml */
 		this.entityManagerFactory = Persistence.createEntityManagerFactory("persistence_unit_db_estudo");
 		this.entityManager = this.entityManagerFactory.createEntityManager();
 	}
 
-	public List<CommentEntity> getAll() {
-		return this.entityManager.createQuery("SELECT c FROM CommentEntity c ORDER BY c.id").getResultList();
+	public List<LikesEntity> getAll() {
+		return this.entityManager.createQuery("SELECT l FROM LikesEntity l ORDER BY l.id").getResultList();
 	}
 
-	public void save(CommentEntity comment) {
+	public void save(LikesEntity like) {
 		this.entityManager.getTransaction().begin();
-		this.entityManager.persist(comment);
-		this.entityManager.getTransaction().commit();		
-	}
-	
-	public void update(CommentEntity comment) {
-		this.entityManager.getTransaction().begin();
-		this.entityManager.merge(comment);
+		this.entityManager.persist(like);
 		this.entityManager.getTransaction().commit();		
 	}
 
+	public void update(LikesEntity like) {
+		this.entityManager.getTransaction().begin();
+		this.entityManager.merge(like);
+		this.entityManager.getTransaction().commit();		
+	}
 }

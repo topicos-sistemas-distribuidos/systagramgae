@@ -10,10 +10,8 @@ public class Picture{
 	private String name;
 	private String path;
 	private String systemName;
-	
 	private Person person;
-	
-	private Post post;
+	private Posts post;
 	
 	public Picture() {
 	}
@@ -55,11 +53,11 @@ public class Picture{
 		this.systemName = systemName;
 	}
 
-	public Post getPost() {
+	public Posts getPost() {
 		return post;
 	}
 
-	public void setPost(Post post) {
+	public void setPost(Posts post) {
 		this.post = post;
 	}
 }

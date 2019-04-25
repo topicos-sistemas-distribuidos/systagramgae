@@ -11,8 +11,7 @@ import org.hibernate.annotations.Type;
 public class Likes{
 	private String description;
 	private Person person;
-	private Post post;
-	
+	private Posts post;
 	private Date date;
 	private boolean mylike;
 	
@@ -34,10 +33,10 @@ public class Likes{
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	public Post getPost() {
+	public Posts getPost() {
 		return post;
 	}
-	public void setPost(Post post) {
+	public void setPost(Posts post) {
 		this.post = post;
 	}
 	public boolean isMylike() {
