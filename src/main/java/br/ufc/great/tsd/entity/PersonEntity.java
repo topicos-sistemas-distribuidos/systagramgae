@@ -136,8 +136,7 @@ public class PersonEntity extends AbstractModel<Long>{
 		this.longitude = longitude;
 	}
 
-	public void addComment(CommentEntity comment, PersonEntity person) {
-		comment.setPerson(person);
+	public void addComment(CommentEntity comment) {
 		this.getComments().add(comment);
 	}
 	
@@ -172,7 +171,7 @@ public class PersonEntity extends AbstractModel<Long>{
 		this.posts.add(post);
 	}
 	
-	public void addLike(LikesEntity like, PersonEntity person) {
+	public void addLike(LikesEntity like) {
 		this.likes.add(like);
 	}
 

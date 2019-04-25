@@ -6,17 +6,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import br.ufc.great.tsd.entity.PostEntity;
+import br.ufc.great.tsd.util.GlobalEntityManager;
 
 public class PostService{
-
-	private final EntityManagerFactory entityManagerFactory;
+	EntityManager entityManager;
 	
-	private final EntityManager entityManager;
-	
-	public PostService(){
-		/*CRIANDO O NOSSO EntityManagerFactory COM AS PORPRIEDADOS DO ARQUIVO persistence.xml */
-		this.entityManagerFactory = Persistence.createEntityManagerFactory("persistence_unit_db_estudo");
-		this.entityManager = this.entityManagerFactory.createEntityManager();
+	public PostService(GlobalEntityManager myEntityManager){
+		this.entityManager = myEntityManager.entityManager;
 	}
 	
 	public List<PostEntity> getAll() {

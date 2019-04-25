@@ -7,6 +7,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import br.ufc.great.tsd.entity.PersonEntity;
+import br.ufc.great.tsd.util.GlobalEntityManager;
 
 /**
  * Class the manipulate the repository of Person
@@ -15,14 +16,10 @@ import br.ufc.great.tsd.entity.PersonEntity;
  */
 public class PersonService{
 	
-	private final EntityManagerFactory entityManagerFactory;
+	EntityManager entityManager;
 	
-	private final EntityManager entityManager;
-	
-	public PersonService(){
-		/*CRIANDO O NOSSO EntityManagerFactory COM AS PORPRIEDADOS DO ARQUIVO persistence.xml */
-		this.entityManagerFactory = Persistence.createEntityManagerFactory("persistence_unit_db_estudo");
-		this.entityManager = this.entityManagerFactory.createEntityManager();
+	public PersonService(GlobalEntityManager myEntityManager){
+		this.entityManager = myEntityManager.entityManager;
 	}
 
 	public PersonEntity get(Long id) {

@@ -8,6 +8,7 @@ import javax.persistence.Persistence;
 
 import br.ufc.great.tsd.entity.UsersEntity;
 import br.ufc.great.tsd.http.Users;
+import br.ufc.great.tsd.util.GlobalEntityManager;
 
 /**
  * Classe de serviço para consumir o repositório de dados de Usuário
@@ -16,14 +17,10 @@ import br.ufc.great.tsd.http.Users;
  */
 public class UsersService{
 	
-	private final EntityManagerFactory entityManagerFactory;
+	EntityManager entityManager;
 	
-	private final EntityManager entityManager;
-	
-	public UsersService(){
-		/*CRIANDO O NOSSO EntityManagerFactory COM AS PORPRIEDADOS DO ARQUIVO persistence.xml */
-		this.entityManagerFactory = Persistence.createEntityManagerFactory("persistence_unit_db_estudo");
-		this.entityManager = this.entityManagerFactory.createEntityManager();
+	public UsersService(GlobalEntityManager myEntityManager){
+		this.entityManager = myEntityManager.entityManager;
 	}
 
 	public UsersEntity get(long codigo) {

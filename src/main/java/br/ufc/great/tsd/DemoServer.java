@@ -35,8 +35,8 @@ public class DemoServer extends Application {
         router.attach("/person/{personId}/picture/{pictureId}/edit", PersonResource.class);
         router.attach("/person/{id}/post/{listPosts}", PersonResource.class);
         router.attach("/person/{personId}/picture/{pictureId}/post", PersonResource.class);
-        router.attach("/person/{personLogged}/post/{postId}/comment", PersonResource.class);
-        router.attach("/person/{personLogged}/post/{postId}/likes", PersonResource.class);
+        router.attach("/person/{personLogged}/post/{postId}/{type}", PersonResource.class);
+        router.attach("/person/{personLogged}/post/{postId}/{type}", PersonResource.class);
         router.attach("/person/{id}/post/search", PersonResource.class);
         
         router.attach("/upload/person/{id}/picture", FileUploadResource.class); // lista as figuras do usuário selecionado
