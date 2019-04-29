@@ -71,79 +71,134 @@ public class PersonResource extends ServerResource{
     	this.type = getAttribute("type");
     }
 
-    /**
-     * Faz a busca por id de pessoa ou lista todos os usuários cadastrados
-     */
     @Get("json")
     public String toString() {
     	Gson gson = new Gson();
     	String json=""; 
-    	String jsonMessage;
     	Message message = new Message();
     	
-    	//Mostrar os dados de uma pessoa
-    	if (id != null) {
-    		Person person = new Person();
-    		person = this.getPerson(Long.valueOf(id));
-    		
-    		try {
-    			json = gson.toJson(person);
-    		}catch(Exception e) {
-    			e.printStackTrace();
-    			message.setConteudo("Erro ao exibir informação de pessoa");
-    			message.setId(500);
-    			jsonMessage = gson.toJson(message);
-    			return jsonMessage; 
-    		}
-    		return json;
+    	// /person/{personId}
+    	if (personId != null && listPosts == null && pictureId == null) {
+    		return(showPerson(this.personId, gson, json, message));
     	}
     	
-    	//Mostrar os posts de uma pessoa
-    	if (id != null && listPosts != null) {
-    		List<Posts> myPosts = new LinkedList<>();
-    		myPosts =  this.listMyPosts(Long.valueOf(id));
-    		
-    		try {
-    			json = gson.toJson(myPosts);
-    		}catch(Exception e) {
-    			e.printStackTrace();
-    			message.setConteudo("Erro ao exibir os posts da Pessoa selecionada");
-    			message.setId(500);
-    			jsonMessage = gson.toJson(message);
-    			return jsonMessage; 
+    	// /person/{personId}/post/listPosts
+    	if (personId != null && type != null) {
+    		if (type.equals("listPosts")) {
+    			return(showPostFromPerson(this.personId, gson, json, message));
+    		}else {
+    			json = "";
     		}
-    		return json;
     	}
     	
-    	//Dada uma picture selecionada faz a publicacao da mesma
+    	// /person/{personId}/picture/{pictureId}/post}
     	if (personId != null && pictureId != null) {
-    		this.createPost(Long.valueOf(pictureId), Long.valueOf(personId));
-    		
-    		message.setConteudo("Post Criado com sucesso!");
-			message.setId(200);
-			json = gson.toJson(message);
-			return json; 
+    		return(postPictureFromPerson(this.personId, this.pictureId, gson, json, message));
     	}
-    	
-    	if (personId==null && pictureId==null && id==null && listPosts==null) {
-        	//Lista todas as pessoas
-        	List<Person> people = new LinkedList<Person>();
-        	people = this.getAllPeople();
-        	
-        	try {
-        		json = gson.toJson(people);
-        	}catch (Exception e){
-    			e.printStackTrace();
-    			message.setConteudo("Erro ao exibir informação de pessoa");
-    			message.setId(500);
-    			jsonMessage = gson.toJson(message);
-    			return jsonMessage;     		
-        	}
-    		
-    	}
-    	
+
+    	// /person
+		if (personId==null && pictureId==null && id==null && listPosts==null) {
+			return(showAllPeople(gson, json, message));
+		}
+		
 		return json;
     }
+
+    /**
+     * Mostra todas as pessas cadastradas no sistema
+     * @param gson
+     * @param json
+     * @param message
+     * @return
+     */
+	private String showAllPeople(Gson gson, String json, Message message) {
+		String jsonMessage;
+		List<Person> people = new LinkedList<Person>();
+		people = this.getAllPeople();
+		
+		try {
+			json = gson.toJson(people);
+		}catch (Exception e){
+			e.printStackTrace();
+			message.setConteudo("Erro ao exibir informação de pessoa");
+			message.setId(500);
+			jsonMessage = gson.toJson(message);
+			return jsonMessage;     		
+		}
+		
+		return(json);
+	}
+
+	/**
+	 * Mostra os Posts de uma pessoa em JSON
+	 * @param id
+	 * @param gson
+	 * @param json
+	 * @param message
+	 * @return
+	 */
+	private String showPostFromPerson(String id, Gson gson, String json, Message message) {
+		String jsonMessage;
+		List<Posts> myPosts = new LinkedList<>();
+		myPosts =  this.listMyPosts(Long.valueOf(id));
+
+		try {
+			json = gson.toJson(myPosts);
+		}catch(Exception e) {
+			e.printStackTrace();
+			message.setConteudo("Erro ao exibir os posts da Pessoa selecionada");
+			message.setId(500);
+			jsonMessage = gson.toJson(message);
+			return jsonMessage; 
+		}
+		
+		return json;
+	}
+
+	/**
+	 * Mostra os dados de uma pessoa como JSON
+	 * @param id
+	 * @param gson
+	 * @param json
+	 * @param message
+	 * @return
+	 */
+	private String showPerson(String id, Gson gson, String json, Message message) {
+		String jsonMessage;
+		Person person = new Person();
+		person = this.getPerson(Long.valueOf(id));
+
+		try {
+			json = gson.toJson(person);
+		}catch(Exception e) {
+			e.printStackTrace();
+			message.setConteudo("Erro ao exibir informação de pessoa");
+			message.setId(500);
+			jsonMessage = gson.toJson(message);
+			return jsonMessage; 
+		}
+		
+		return json;
+	}
+
+	/**
+	 * Dada uma picture selecionada faz a publicacao da mesma 
+	 * @param personId
+	 * @param pictureId
+	 * @param gson
+	 * @param json
+	 * @param message
+	 * @return
+	 */
+	private String postPictureFromPerson(String personId, String pictureId, Gson gson, String json, Message message) {
+		this.createPost(Long.valueOf(pictureId), Long.valueOf(personId));
+
+		message.setConteudo("Post Criado com sucesso!");
+		message.setId(200);
+		json = gson.toJson(message);
+		
+		return json; 
+	}
 	
     @Post
     public String saveContent(String jsonContent) {
@@ -253,6 +308,7 @@ public class PersonResource extends ServerResource{
     		user.setUsername(elemento.getUser().getUsername());
     		user.setEmail(elemento.getUser().getEmail());
     		person.setUser(user);
+    		person.setPosts(this.listMyPosts(elemento.getId()));
     		people.add(person);
     	}
     	
@@ -265,32 +321,29 @@ public class PersonResource extends ServerResource{
     	
     	person.setId(personEntity.getId());
     	person.setCep(personEntity.getCep());
-    	
+    	//lista de comentários da pessoa
     	if(personEntity.getComments() != null) {
-        	//person.setComments(personEntity.getComments());    		
+        	person.setComments(this.listMyComments(person.getId()));    		
     	}
 
     	person.setAddress(personEntity.getAddress());
     	person.setLatitude(personEntity.getLatitude());
     	person.setLongitude(personEntity.getLongitude());
-    	
+    	//lista de likes da pessoa
     	if (personEntity.getLikes() != null) {
-        	//TODO: person.setListLikes(personEntity.getLikes());    		
+        	person.setListLikes(this.listMyLikes(person.getId()));    		
     	}
 
     	person.setName(personEntity.getName());
     	
+    	//lista de pictures da pessoa
     	if (personEntity.getPictures() != null) {
-        	//TODO: person.setPictures(personEntity.getPictures());    		
+        	person.setPictures(this.listMyPictures(person.getId()));    		
     	}
 
     	if (personEntity.getPosts() != null) {
     		List<Posts> posts = new LinkedList<>(); 
-    		for (PostEntity elemento : personEntity.getPosts()) {
-    			Posts post = new Posts();
-    			post.setId(elemento.getId());
-    			post.setDate(elemento.getDate());
-    		}
+    		posts = this.listMyPosts(person.getId());
         	person.setPosts(posts);    		
     	}
 
@@ -318,6 +371,10 @@ public class PersonResource extends ServerResource{
     	
     	List<CommentEntity> list = person.getComments();
     	
+    	if (list.size() == 0) {
+    		return null;
+    	}
+
     	for (CommentEntity elemento : list) {
     		Comment myComment = new Comment();
     		myComment.setDate(elemento.getDate());
@@ -343,16 +400,71 @@ public class PersonResource extends ServerResource{
      */
     //@RequestMapping(value="/person/{id}/likes")
     public List<Likes> listMyLikes(Long id) {
-    	
-    	List<Likes> myLikes = new LinkedList<Likes>();
-    	
+    	List<Likes> myLikes = new LinkedList<Likes>();    	
     	PersonEntity person = personService.get(id);
     	    	
     	List<LikesEntity> list = person.getLikes();
-    	//TODO carregar a lista de likes em myLikes
+    	
+    	if (list.size() == 0) {
+    		return null;
+    	}
+    	
+    	for (LikesEntity elemento : list) {
+    		Likes myLike = new Likes();
+    		myLike.setDate(elemento.getDate());
+    		myLike.setDescription(elemento.getDescription());
+    		myLike.setMylike(elemento.isMylike());
+			
+    		Person likePerson = new Person();    		
+    		if (elemento.getPerson() != null) {
+
+    			likePerson.setId(elemento.getPerson().getId());
+    			likePerson.setName(elemento.getPerson().getName());
+    		}
+    		myLike.setPerson(likePerson);
+    		
+    		Posts postLike = new Posts();
+    		if (elemento.getPost() != null) {
+    			postLike.setId(elemento.getId());
+    		}
+    		myLike.setPost(postLike);
+    		myLikes.add(myLike);
+    	}
     	
         return myLikes;
-
+    }
+    
+    public List<Picture> listMyPictures(Long id){
+    	List<Picture> myPictures = new LinkedList<Picture>();
+    	PersonEntity person = personService.get(id);
+    	
+    	List<PictureEntity> list = person.getPictures();
+    	
+    	if (list.size() == 0) {
+    		return null;
+    	}
+    	
+    	for(PictureEntity elemento : list) {
+    		Picture myPicture = new Picture();
+    		myPicture.setId(elemento.getId());
+    		myPicture.setName(elemento.getName());
+    		myPicture.setPath(elemento.getPath());
+    		myPicture.setSystemName(elemento.getSystemName());
+    		Person picturePerson = new Person();
+    		if (elemento.getPerson() != null) {
+    			picturePerson.setId(elemento.getPerson().getId());
+    		}
+    		myPicture.setPerson(picturePerson);
+    		
+    		Posts picturePost = new Posts();
+    		if (elemento.getPost() != null) {
+    			picturePost.setId(elemento.getPost().getId());
+    		}
+    		myPicture.setPost(picturePost);
+    		myPictures.add(myPicture);
+    	}
+    	
+    	return myPictures;
     }
 
     /**
@@ -369,7 +481,7 @@ public class PersonResource extends ServerResource{
     	
     	return allComments;
     }
-
+    
     /**
      * Retorna todos os comentários de todas as pessoas
      * @param model Model
@@ -477,7 +589,7 @@ public class PersonResource extends ServerResource{
     	return null;
     }
 	
-	/**
+    /**
 	 * Carrega a página contendo todos os posts do usuário
 	 * @param id Id da pessoa
 	 * @param model Model
@@ -492,26 +604,26 @@ public class PersonResource extends ServerResource{
 		}
 
 		List<Posts> myPosts = new LinkedList<Posts>();
-		
 		List<PostEntity> list = person.getPosts();
 		
 		for (PostEntity elemento : list) {
 			Posts post = new Posts();
-			
-			if (elemento.getComments() != null) {
-				//post.setComments(elemento.getComments());		
+			List<CommentEntity> listComments = elemento.getComments();
+			if (listComments != null) {
 				List<Comment> comments = new LinkedList<Comment>();
-				for (CommentEntity comment : elemento.getComments()) {
+				for (CommentEntity comment : listComments) {
 					Comment myComment = new Comment();
 					myComment.setDate(comment.getDate());
 					myComment.setDescription(comment.getDescription());
 					myComment.setId(comment.getId());
 					
 					Person myPerson1 = new Person();
-					if (comment.getPerson() != null) {
-						myPerson1.setAddress(comment.getPerson().getAddress());
-						myPerson1.setName(comment.getPerson().getName());
-						myPerson1.setId(comment.getPerson().getId());
+					PersonEntity personComment = new PersonEntity();
+					personComment = comment.getPerson();
+					if (personComment != null) {
+						myPerson1.setAddress(personComment.getAddress());
+						myPerson1.setName(personComment.getName());
+						myPerson1.setId(personComment.getId());
 						myComment.setPerson(myPerson1);
 					}
 					comments.add(myComment);
