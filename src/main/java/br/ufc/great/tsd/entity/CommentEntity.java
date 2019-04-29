@@ -12,7 +12,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
-@Table(name="Comment")
+@Table(name="CommentEntity")
 public class CommentEntity extends AbstractModel<Long>{
 	private static final long serialVersionUID = 1L;
 	private String description;

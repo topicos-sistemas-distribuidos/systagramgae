@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
-@Table(name="Picture")
+@Table(name="PictureEntity")
 public class PictureEntity extends AbstractModel<Long>{
 	private static final long serialVersionUID = 1L;
 	private String name;

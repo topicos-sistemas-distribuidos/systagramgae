@@ -21,6 +21,17 @@ public class DemoServer extends Application {
         router.attach("/users/{email}/{senha}", UserResource.class);
         
         router.attach("/person", PersonResource.class);
+        router.attach("/person/{personId}", PersonResource.class);
+        router.attach("/person/{personId}/post/{type}", PersonResource.class);
+        router.attach("/person/{personId}/picture/{type}", PersonResource.class);
+        router.attach("/person/{personId}/picture/{pictureId}/post", PersonResource.class);
+        router.attach("/person/{personLogged}/post/{postId}/{type}", PersonResource.class);
+        router.attach("/person/{personLogged}/post/{postId}/{type}", PersonResource.class);
+        
+        router.attach("/person/{id}/post/search", PersonResource.class);
+        router.attach("/person/{personId}/select/picture", PersonResource.class);
+        router.attach("/person/{personId}/picture/{pictureId}/edit", PersonResource.class);
+        
         router.attach("/person/{id}/comment", PersonResource.class);
         router.attach("/person/{id}/likes", PersonResource.class);
         router.attach("/person/comment", PersonResource.class);
@@ -31,13 +42,6 @@ public class DemoServer extends Application {
         router.attach("/person/{id}/likes/save", PersonResource.class);
         router.attach("/person/{id}/comment/update", PersonResource.class);
         router.attach("/person/{personId}/comment/{commentId}/edit", PersonResource.class);
-        router.attach("/person/{personId}/select/picture", PersonResource.class);
-        router.attach("/person/{personId}/picture/{pictureId}/edit", PersonResource.class);
-        router.attach("/person/{id}/post/{listPosts}", PersonResource.class);
-        router.attach("/person/{personId}/picture/{pictureId}/post", PersonResource.class);
-        router.attach("/person/{personLogged}/post/{postId}/{type}", PersonResource.class);
-        router.attach("/person/{personLogged}/post/{postId}/{type}", PersonResource.class);
-        router.attach("/person/{id}/post/search", PersonResource.class);
         
         router.attach("/upload/person/{id}/picture", FileUploadResource.class); // lista as figuras do usuário selecionado
         router.attach("/upload/selected/image/users/{idUser}", FileUploadResource.class);
