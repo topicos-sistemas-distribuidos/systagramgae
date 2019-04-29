@@ -83,8 +83,9 @@ public class FileUploadResource extends ServerResource {
     	if (id != null && listMyPictures(Long.valueOf(id)).size() > 0) {
     		//pega os dados da pessoa e retorna a lista de pictures, em formato JSON, da pessoa
     		List<Picture> pictures = new ArrayList<Picture>();
+    		List<PictureEntity> list = listMyPictures(Long.valueOf(id));
     		
-    		for (PictureEntity elemento : listMyPictures(Long.valueOf(id))) {
+    		for (PictureEntity elemento : list) {
     			Picture picture = new Picture();
     			picture.setId(elemento.getId());
     			picture.setName(elemento.getName());

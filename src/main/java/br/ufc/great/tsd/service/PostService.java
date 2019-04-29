@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+
 import br.ufc.great.tsd.entity.PostEntity;
 import br.ufc.great.tsd.util.GlobalEntityManager;
 
@@ -22,7 +23,7 @@ public class PostService{
 	public PostEntity get(Long postId) {
 		return this.entityManager.find(PostEntity.class, postId);
 	}
-
+	
 	public void save(PostEntity post) {
 		this.entityManager.getTransaction().begin();
 		this.entityManager.persist(post);

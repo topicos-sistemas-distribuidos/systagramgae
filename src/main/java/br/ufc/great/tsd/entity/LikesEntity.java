@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 
 @Entity
-@Table(name="Likes")
+@Table(name="LikesEntity")
 public class LikesEntity extends AbstractModel<Long>{
 	private static final long serialVersionUID = 1L;
 	private String description;

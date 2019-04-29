@@ -15,7 +15,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
-@Table(name="Person")
+@Table(name="PersonEntity")
 public class PersonEntity extends AbstractModel<Long>{
 	private static final long serialVersionUID = 1L;
 	@JsonBackReference(value="user-person")
