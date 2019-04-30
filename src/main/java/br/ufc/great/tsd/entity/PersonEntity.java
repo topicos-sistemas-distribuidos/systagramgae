@@ -151,8 +151,7 @@ public class PersonEntity extends AbstractModel<Long>{
 		return null;
 	}
 
-	public void addPicture(PictureEntity picture, PersonEntity person) {
-		picture.setPerson(person);
+	public void addPicture(PictureEntity picture) {		
 		this.getPictures().add(picture);
 	}
 	

@@ -1,11 +1,14 @@
 package br.ufc.great.tsd;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileSystems;
@@ -13,6 +16,11 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.restlet.ext.fileupload.RestletFileUpload;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
@@ -118,25 +126,46 @@ public class FileUploadResource extends ServerResource {
     }
     
     /**
+     * /upload/selected/picture/person/{personId}
      * Dado o json que representa um usuário faz o upload de uma picture do mesmo
      * @param userJson
      * @return mensagem informando se funcionou ou não 
      */
     @Post
-    public Representation handleUpload(String id, Representation entity){
+    public Representation handleUpload(Representation entity){
     	Message message = new Message();
     	Gson gson = new Gson();
     	String json;
 
-//    	if (entity != null && MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
     	if (entity != null) {
-    		PictureEntity picture = new PictureEntity();
-    		this.files = (MultipartFile) entity;
+    		//if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+        		PictureEntity picture = new PictureEntity();
+        		
+        		DiskFileItemFactory factory = new DiskFileItemFactory();
+        		factory.setSizeThreshold(10000240);
+        		RestletFileUpload upload = new RestletFileUpload(factory);
+        		try {
+        			FileItemIterator fileIterator = upload.getItemIterator(entity);
 
-    		this.uploadPicture(Long.valueOf(personId), picture, files);
-    		message.setConteudo("Arquivo inserido com sucesso!");
-    		message.setId(200);
+        			while (fileIterator.hasNext()) {
+        				FileItemStream fi = fileIterator.next();
+        				String fieldName = fi.getFieldName();
+        				String contentType = fi.getContentType();        				
+        				
+        				File fileTemp = new File("temp.png");
 
+        				this.copyInputStreamToFile(fi.openStream(), fileTemp);
+        				this.uploadPicture(Long.valueOf(personId), picture, fileTemp);
+        				message.setConteudo("Arquivo inserido com sucesso!");
+        				message.setId(200);
+
+        			}
+					
+				} catch (FileUploadException | IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        		
     	} else {
     		throw new ResourceException(500);
     	}
@@ -146,6 +175,20 @@ public class FileUploadResource extends ServerResource {
     }
 
     	
+    private void copyInputStreamToFile( InputStream in, File file ) {
+        try {
+            OutputStream out = new FileOutputStream(file);
+            byte[] buf = new byte[1024];
+            int len;
+            while((len=in.read(buf))>0){
+                out.write(buf,0,len);
+            }
+            out.close();
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 	/**
 	 * Carrega a página contendo todas a fotos do usuário
 	 * @param id Id da pessoa
@@ -275,7 +318,7 @@ public class FileUploadResource extends ServerResource {
 	 * @return carrega listMyPictures.html
 	 */
 	//@RequestMapping(value="/upload/selected/picture/person/{personId}") @RequestParam("photouser")
-	public String uploadPicture(Long personId, PictureEntity picture,  MultipartFile files) {
+	public String uploadPicture(Long personId, PictureEntity picture, File files) {
 		new Constantes();
 		String uploadFilePath = Constantes.picturesDirectory; 	  
 		String idAux = String.valueOf(personId);
@@ -288,7 +331,8 @@ public class FileUploadResource extends ServerResource {
 		String data = data1.replace(" ", "-");
 		
 		//Define o diretório da imagem e o nome do arquivo que será salvo no filesystem
-		String pathImage = uploadFilePath + FileSystems.getDefault().getSeparator() + idAux + "-" + data + ".png";
+		//String pathImage = uploadFilePath + FileSystems.getDefault().getSeparator() + idAux + "-" + data + ".png";
+		String pathImage = Constantes.s3awsurl + "uploads/pictures/" + idAux + "-" + data + ".png";
 		String systemName = idAux + "-" + data;
 		
     	picture.setPath(pathImage); //TODO: precisa corrigir para pegar a url da image no bucket
@@ -296,15 +340,18 @@ public class FileUploadResource extends ServerResource {
     	
     	//Dono da imagem
     	PersonEntity person = this.personService.get(personId);
-    	person.addPicture(picture, person);    	    	
-    	personService.save(person);				
+    	
+    	picture.setPerson(person);
+    	this.pictureService.save(picture);
+    	
+    	person.addPicture(picture);    	    	
+    	personService.update(person);				
 		
-		File myFile = convert(files);
 		File newFile = new File(systemName +".png");			
 		
 		//Transforma uma imagem qualquer em png para padronizar as imagens do sistema
 		try {
-			FileChannel src = new FileInputStream(myFile).getChannel();
+			FileChannel src = new FileInputStream(files).getChannel();
 			FileChannel dest = new FileOutputStream(newFile).getChannel();
 			dest.transferFrom(src, 0, src.size());
 			System.out.println("Arquivo transformado em .png com sucesso!");
@@ -328,7 +375,7 @@ public class FileUploadResource extends ServerResource {
 			e.printStackTrace();
 		}	    
 		
-		if (!files.isEmpty()){
+		if (files != null){
 			String path = fileSaver.write(multipartFileToSend, "pictures");				
 		}
 
@@ -336,10 +383,7 @@ public class FileUploadResource extends ServerResource {
 		//List de fotos da pessoa
 		List<PictureEntity> list = person.getPictures();
 
-		//model.addAttribute("successFlash", "Successfully uploaded files " + newFile.getName());
-		//model.addAttribute("s3awsurl", new Constantes().s3awsurl);
-
-		return "/uploads/listMyPictures";
+		return "Successfully uploaded files " + newFile.getName();
 	}
 
 	/**

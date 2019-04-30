@@ -22,7 +22,7 @@ public class FileSaver {
 		try {
 			storageOptions = StorageOptions.newBuilder()
 					.setProjectId("systagramgae")
-					.setCredentials(GoogleCredentials.fromStream(new FileInputStream("systagramgae-e4c769ccac82.json"))).build();
+					.setCredentials(GoogleCredentials.fromStream(new FileInputStream("/Users/armandosoaressousa/git/tsd/systagramgae/systagramgae-e4c769ccac82.json"))).build();
 			System.out.println("Configurações do Bucket carregadas com sucesso!");
 		} catch (IOException e) {
 			System.out.println("Erro ao carregar as configurações do Bucket.");
