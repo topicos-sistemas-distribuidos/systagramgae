@@ -17,6 +17,8 @@ Os seguintes passos foram seguidos para garantir a construção da Aplicação S
 
 4. O modelo de aplicação do Google API Engine escolhido foi o "App Engine Standard" que usa como referência o padrão Servlet 3.1 e tem como Container Java o Jetty Eclipse. Com isso, durante a construção da aplicação foi necessário seguir os padrões e limitações adotados por essas tecnologias. 
 
+Obs: Os aplicativos no padrão "App Engine Standard" são executados em um ambiente seguro e em área restrita, permitindo que o ambiente padrão do App Engine distribua solicitações em vários servidores e dimensionando servidores para atender às demandas de tráfego. Seu aplicativo é executado dentro de seu próprio ambiente seguro e confiável, independente do hardware, do sistema operacional ou da localização física do servidor.
+
 5. O projeto Java foi criado baseado no modelo de Projeto Java Web Aplication no padrão Maven para controle das dependência. 
 
 6. Uma vez criado o projeto o mesmo foi transformado para o padrão "App Engine Standard".
