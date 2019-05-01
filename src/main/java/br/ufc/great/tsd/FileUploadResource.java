@@ -206,7 +206,7 @@ public class FileUploadResource extends ServerResource {
     }
         
     private String uploadFile(FileItemStream fileStream, String bucket) throws IOException{
-		final String fileName = this.systemName + ".pgn";
+		final String fileName = this.systemName + ".png";
 		
 		Storage storage = StorageOptions.getDefaultInstance().getService();
 		BlobInfo blobInfo = 
