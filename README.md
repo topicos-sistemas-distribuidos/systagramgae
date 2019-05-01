@@ -1,7 +1,35 @@
-# systagramgae
-Serviço restful do systagram
+# SystagramRest
+Serviço restful do systagram para prover os recursos da aplicação para clientes móveis e web. 
 
-Recomendações para configuração do Bucket e banco Mysql do Google Cloud. 
+O Google API Engine é uma plataforma do Google Cloud para desenvolver e hospedar aplicações web na infraestrutura do Google. Esta API do Google é uma tecnologia que usa o modelo de desenvolvimento de aplicações para o ambiente de nuvem de Plataforma como Serviço que permite a criação de aplicações totalmente gerenciadas e sem servidores (Servless). 
+
+A linguagem escolhida para criar o SystagramRest foi o Java integrando o Google SDK com a IDE eclipse e um projeto criado no Google Cloud. 
+
+Uma das vantagens da implantação da aplicação no Google API Engine é o fato de fazer o mínimo de configuração de infraestrutura e uma vez a aplicação implantada em produção ela já vem configurada com o fator de segurança SSL (htts). Além disso, o mesmo oferece uma boa opção de monitoramento, geração de registros, diagnóstico da aplicação e requisições dos clientes. 
+
+Os seguintes passos foram seguidos para garantir a construção da Aplicação SystagramRest prover os recursos que serão consumidos por clientes web e mobile no padrão Restful. 
+
+1. Instalar o Google Cloud SDK no Eclipse. 
+
+2. A linguagem escolhida para a contrução da aplicação foi o Java devido a maior familiaridade dos autores da aplicação. 
+
+3. O Google API Engine exige que seja respeitado o padrão de desenvolvimento provido pela plataforma. Com isso, foi necessário fazer um estudo de frameworks suportados como por exemplo o framework Spring Cloud e o framework Restlet. Como o modelo arquitetural escolhido foi o modelo Restful, foi escolhido o framework Restlet para a contrução do servidor de recursos da aplicação. 
+
+4. O modelo de aplicação do Google API Engine escolhido foi o "App Engine Standard" que usa como referência o padrão Servlet 3.1 e tem como Container Java o Jetty Eclipse. Com isso, durante a construção da aplicação foi necessário seguir os padrões e limitações adotados por essas tecnologias. 
+
+5. O projeto Java foi criado baseado no modelo de Projeto Java Web Aplication no padrão Maven para controle das dependência. 
+
+6. Uma vez criado o projeto o mesmo foi transformado para o padrão "App Engine Standard".
+
+7. Para garantir o funcionamento da aplicação foi necessário importar as dependências e fazer a mesma apontar para o Jetty. Além de importar as dependências do Google Cloud (com.google.cloud) e Google API Engine (com.google.appengine) para garantir o uso dos recursos PaaS do Google. 
+
+8. O armazenamento dos arquivos de fotos gerenciados pela aplicação é feito no serviço Google Cloud Store. Para isso, foi necessário criar um componente que se comunicasse com tal serviço. Com isso, foi necessário criar um esquema de controle de autenticação e envio de arquivos para o Google Cloud Store. 
+
+9. O armazenamento das informações gerenciadas pela aplicação é feito no serviço Google Cloud SQL usando o banco MySql e o conjunto de componentes providos pelo JPA para controle de comunicação com o banco usando os padrão ORM (Object Relational Mapping) via Hibernate. 
+
+
+Recomendações técnicas de configuração de Bucket e Banco de Dados
+---
 
 1. Criação do Bucket 
 meu-bucket-files
