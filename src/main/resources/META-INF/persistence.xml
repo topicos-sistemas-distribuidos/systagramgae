@@ -10,7 +10,7 @@
       <properties>
          <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
          <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
-         <property name="javax.persistence.jdbc.url" value="jdbc:mysql://35.199.120.243:3306/teste2"/>
+         <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/teste2"/>
          <property name="javax.persistence.jdbc.user" value="root"/>
          <property name="javax.persistence.jdbc.password" value="skyinfo"/>
          <property name="hibernate.show_sql" value="true"/>
