@@ -1,0 +1,39 @@
+#Testes do lado cliente consumindo os recursos publicados pelo serviços SystagramRest
+
+1. Inserir novo usuário.
+curl -v --header "Content-Type: application/json" --request POST --data '{"username":"uteste2", "password":"uteste2"}' https://systagramgae.appspot.com/users/newUser
+
+Dado um usuário novo de id=5 segue comando para atualizar o usuário:
+curl -H 'Content-Type: application/json' -X PUT -d '{"username":"utesteUpdated","password":"utesteUpdated","enabled":true,"email":"utesteUpdated@gmail.com"}' https://systagramgae.appspot.com/users/5
+
+Dado uma pessoa de id=2 segue comando para atualizar a pessoa:
+curl -H 'Content-Type: application/json' -X PUT -d '{"name":"Pessoa Teste Updated","latitude":0.0,"longitude":0.0, "address":"Rua Teste Pessoa Updated", "city":"Teresina", "state":"PI", "cep":""}' https://systagramgae.appspot.com/person/2
+
+2. Novo usuário se loga.
+curl https://systagramgae.appspot.com/users/utesteUpdated@gmail.com/utesteUpdated
+
+a. Usuário lista os usuários do sistema.
+curl https://systagramgae.appspot.com/users
+
+3. Usuário de pessoa com id=2 insere fotos
+curl -v -F 'img_mypicture=@/Users/armandosoaressousa/git/tsd/systagramgae/dragon-fly-1391358.jpg' https://systagramgae.appspot.com/upload/selected/picture/person/2
+
+curl -v -F 'img_mypicture=@/Users/armandosoaressousa/git/tsd/systagramgae/chicago.jpg' https://systagramgae.appspot.com/upload/selected/picture/person/2
+
+4. Listas as figuras do usuário.
+curl https://systagramgae.appspot.com/upload/person/2/picture
+
+4.1. Usuário publica a foto 32 e vira um novo post.
+curl -v https://systagramgae.appspot.com/person/2/picture/32/post
+
+4.2. Usuário publica a foto 33 e vira um novo post.
+curl -v https://systagramgae.appspot.com/person/2/picture/33/post
+
+5. Usuário lista seus posts.
+curl -v https://systagramgae.appspot.com/person/2/post/listPosts
+
+6. Usuário comenta o post 2.
+curl -v --header "Content-Type: application/json" --request POST --data '{"description":"Teste de comentário no post 2 referente a picture 32"}' https://systagramgae.appspot.com/person/2/post/2/comment
+
+7. Usuário dá um like no post 2. 
+curl -v --header "Content-Type: application/json" --request POST --data '{"description":"Teste de like no post 2", "mylike":"true"}' https://systagramgae.appspot.com/person/2/post/2/like
