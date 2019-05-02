@@ -255,6 +255,7 @@ public class UserResource extends ServerResource {
         	
         	PersonEntity person = new PersonEntity(); 
         	person.setUser(aux);
+        	person.setName(aux.getUsername());
         	aux.setPerson(person);
         	
             userService.save(aux);
