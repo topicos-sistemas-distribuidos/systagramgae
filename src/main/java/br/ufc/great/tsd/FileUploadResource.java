@@ -6,25 +6,40 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
+
+import org.apache.commons.fileupload.FileItemHeaders;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.restlet.ext.fileupload.RestletFileUpload;
+import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
-import org.restlet.resource.Status;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.cloud.storage.Acl;
+import com.google.cloud.storage.Acl.Role;
+import com.google.cloud.storage.Acl.User;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import br.ufc.great.tsd.entity.PersonEntity;
 import br.ufc.great.tsd.entity.PictureEntity;
@@ -53,6 +68,11 @@ public class FileUploadResource extends ServerResource {
 	private String userId;
 	private String personId;
 	private MultipartFile files;
+	String pathImage;
+	String systemName;
+	private Storage storage;
+	private StorageOptions storageOptions;
+	String bucket;
 
 	public FileUploadResource() {
 		userService = new UsersService(myEntityManager);
@@ -117,26 +137,39 @@ public class FileUploadResource extends ServerResource {
     	
     }
     
-    /**
-     * Dado o json que representa um usuário faz o upload de uma picture do mesmo
-     * @param userJson
-     * @return mensagem informando se funcionou ou não 
-     */
     @Post
-    public Representation handleUpload(String id, Representation entity){
+    public Representation handleUpload(Representation entity){
     	Message message = new Message();
     	Gson gson = new Gson();
-    	String json;
-
-//    	if (entity != null && MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+    	String json="";
+    	
     	if (entity != null) {
-    		PictureEntity picture = new PictureEntity();
-    		this.files = (MultipartFile) entity;
+        		PictureEntity picture = new PictureEntity();
+        		
+        		setPathAndSystemName(Long.valueOf(personId));
+        		PersonEntity person = savePictureAndPerson(Long.valueOf(personId), picture);				
 
-    		this.uploadPicture(Long.valueOf(personId), picture, files);
-    		message.setConteudo("Arquivo inserido com sucesso!");
-    		message.setId(200);
+        		DiskFileItemFactory factory = new DiskFileItemFactory();
+        		factory.setSizeThreshold(10000240);
+        		RestletFileUpload upload = new RestletFileUpload(factory);
+        		
+        		try {
+        			FileItemIterator fileIterator = upload.getItemIterator(entity);
 
+        			while (fileIterator.hasNext()) {
+        				FileItemStream fi = fileIterator.next();
+        				String fieldName = fi.getFieldName();
+        				String contentType = fi.getContentType(); 
+        				FileItemHeaders metainfo = fi.getHeaders();
+        				        		
+        				String bucket = new Constantes().bucketPrincipal;
+						this.uploadFile(fi, bucket);
+        				message.setConteudo("Arquivo inserido com sucesso!");
+        				message.setId(200);
+        			}
+				} catch (FileUploadException | IOException e) {
+					e.printStackTrace();
+				}
     	} else {
     		throw new ResourceException(500);
     	}
@@ -145,7 +178,49 @@ public class FileUploadResource extends ServerResource {
     	return httpSuccess(); 
     }
 
+    public Representation handleUploadTeste(Representation entity) throws IOException, ServletException{
+    	org.restlet.Request restletRequest = getRequest();
+    	HttpServletRequest req = ServletUtils.getRequest(restletRequest);
+
+    	String bucket = "systagramgae.appspot.com"; 
+    	Part filePart = req.getPart("file");
+    	final String fileName = filePart.getSubmittedFileName();
+    	String imageURL = req.getParameter("img_mypicture");
     	
+		setPathAndSystemName(Long.valueOf(personId));
+		
+    	PictureEntity picture=null;
+		PersonEntity person = savePictureAndPerson(Long.valueOf(personId), picture);				
+		
+    	if(fileName != null && !fileName.isEmpty() && fileName.contains(".")) {
+    		final String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+    		String[] allowedExt = {"jpg", "jpeg", "png", "gif" };
+    		for (String s : allowedExt) {
+    			if (extension.equals(s)) {
+    				//System.out.println(this.uploadFile(filePart, bucket));
+    			}
+    		}
+    		throw new ServletException("O arquivo deve ser uma imagem");
+    	}    	
+    	return null;
+    }
+        
+    private String uploadFile(FileItemStream fileStream, String bucket) throws IOException{
+		final String fileName = this.systemName + ".png";
+		
+		Storage storage = StorageOptions.getDefaultInstance().getService();
+		BlobInfo blobInfo = 
+				storage.create(
+						BlobInfo
+						.newBuilder(bucket, "uploads/pictures/"+fileName)
+						.setAcl(new ArrayList<>(Arrays.asList(Acl.of(User.ofAllUsers(), Role.READER))))
+						.setContentType("image/png")
+						.build(),
+						fileStream.openStream());
+		
+		return blobInfo.getMediaLink();
+	}
+
 	/**
 	 * Carrega a página contendo todas a fotos do usuário
 	 * @param id Id da pessoa
@@ -212,26 +287,54 @@ public class FileUploadResource extends ServerResource {
 	    
 	    return convFile;
 	}
-	
+		
 	/**
-	 * Faz o upload de uma imagem do usuário para o bucket de usuario
-	 * @param idUser Id do Usuário
-	 * @param model Model
-	 * @param files Array de Arquivos
-	 * @return Formulário do Usuário
+	 * Dada uma pessoa e os dados de Picture salva tais informacoes no banco
+	 * @param personId
+	 * @param picture
+	 * @return
 	 */
-	//@RequestMapping("/upload/selected/image/users/{idUser}") @RequestParam("photouser") 
-	public String upload(Long idUser, MultipartFile files) {
-		new Constantes(); 	  
-		String idAux = String.valueOf(idUser);		
-		String bucketName = Constantes.bucketPrincipal;
-		
-		File myFile = convert(files);
-		File newFile = new File(idAux+".png");			
-		
-		//Transforma uma imagem qualquer em png para padronizar as imagens do sistema
+	private PersonEntity savePictureAndPerson(Long personId, PictureEntity picture) {
+		picture.setPath(pathImage);
+    	picture.setSystemName(systemName);    	
+    	//Dono da imagem
+    	PersonEntity person = this.personService.get(personId);    	
+    	picture.setPerson(person);
+    	this.pictureService.save(picture);
+    	//Associa picture a pessoa
+    	person.addPicture(picture);    	    	
+    	personService.update(person);
+		return person;
+	}
+
+	/**
+	 * Dado um arquivo transforma em Multipart
+	 * @param newFile
+	 * @param multipartFileToSend
+	 * @return
+	 */
+	private MultipartFile transformFileToMultipart(File newFile, MultipartFile multipartFileToSend) {
 		try {
-			FileChannel src = new FileInputStream(myFile).getChannel();
+			InputStream stream =  new FileInputStream(newFile);
+			multipartFileToSend = new MockMultipartFile(systemName + ".png", newFile.getName(), MediaType.IMAGE_PNG_VALUE, stream);
+			System.out.println("Multipart transformado em arquivo com sucesso!");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("ERRO: no Multipart transformado em arquivo.");
+			e.printStackTrace();
+		}
+		return multipartFileToSend;
+	}
+
+	/**
+	 * Transforma uma imagem qualquer em png para padronizar as imagens do sistema
+	 * @param files
+	 * @param newFile
+	 */
+	private void transformImagetoPNG(File files, File newFile) {
+		try {
+			FileChannel src = new FileInputStream(files).getChannel();
 			FileChannel dest = new FileOutputStream(newFile).getChannel();
 			dest.transferFrom(src, 0, src.size());
 			System.out.println("Arquivo transformado em .png com sucesso!");
@@ -242,42 +345,14 @@ public class FileUploadResource extends ServerResource {
 			System.out.println("Erro ao transformar arquivo em .png.");
 			e.printStackTrace();
 		}
-		
-		MultipartFile multipartFileToSend=null;
-		try {
-			InputStream stream =  new FileInputStream(newFile);
-			multipartFileToSend = new MockMultipartFile(idAux+".png", newFile.getName(), MediaType.IMAGE_PNG_VALUE, stream);
-			System.out.println("Multipart transformado em arquivo com sucesso!");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.out.println("ERRO: no Multipart transformado em arquivo.");
-			e.printStackTrace();
-		}	    
-		
-		if (!files.isEmpty()){
-			String path = fileSaver.write(multipartFileToSend, "users");				
-		}
-
-		UsersEntity user = this.userService.get(idUser);
-
-		//model.addAttribute("successFlash", "Successfully uploaded files " + newFile.getName());
-		//model.addAttribute("s3awsurl", new Constantes().s3awsurl);
-
-		return "uploads/formpwd";
 	}
-	
+
 	/**
-	 * Faz o upload de fotos da pessoa para seu album de fotos
-	 * @param personId id da Pessoa
-	 * @param model Model
-	 * @param files arquivos de imagens que serão carregados para o album de fotos
-	 * @return carrega listMyPictures.html
+	 * Atualiza as variaveis pathImage e systemName quando uma nova picture é salva
+	 * @param personId
 	 */
-	//@RequestMapping(value="/upload/selected/picture/person/{personId}") @RequestParam("photouser")
-	public String uploadPicture(Long personId, PictureEntity picture,  MultipartFile files) {
-		new Constantes();
-		String uploadFilePath = Constantes.picturesDirectory; 	  
+	private void setPathAndSystemName(Long personId) {
+		new Constantes(); 	  
 		String idAux = String.valueOf(personId);
 		String padrao = "yyyy/MM/dd HH:mm:ss";
 		
@@ -288,58 +363,8 @@ public class FileUploadResource extends ServerResource {
 		String data = data1.replace(" ", "-");
 		
 		//Define o diretório da imagem e o nome do arquivo que será salvo no filesystem
-		String pathImage = uploadFilePath + FileSystems.getDefault().getSeparator() + idAux + "-" + data + ".png";
-		String systemName = idAux + "-" + data;
-		
-    	picture.setPath(pathImage); //TODO: precisa corrigir para pegar a url da image no bucket
-    	picture.setSystemName(systemName);
-    	
-    	//Dono da imagem
-    	PersonEntity person = this.personService.get(personId);
-    	person.addPicture(picture, person);    	    	
-    	personService.save(person);				
-		
-		File myFile = convert(files);
-		File newFile = new File(systemName +".png");			
-		
-		//Transforma uma imagem qualquer em png para padronizar as imagens do sistema
-		try {
-			FileChannel src = new FileInputStream(myFile).getChannel();
-			FileChannel dest = new FileOutputStream(newFile).getChannel();
-			dest.transferFrom(src, 0, src.size());
-			System.out.println("Arquivo transformado em .png com sucesso!");
-		} catch (FileNotFoundException e) {
-			System.out.println("Arquivo nao existe!");
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.out.println("Erro ao transformar arquivo em .png.");
-			e.printStackTrace();
-		}
-		
-		MultipartFile multipartFileToSend=null;
-		try {
-			InputStream stream =  new FileInputStream(newFile);
-			multipartFileToSend = new MockMultipartFile(systemName + ".png", newFile.getName(), MediaType.IMAGE_PNG_VALUE, stream);
-			System.out.println("Multipart transformado em arquivo com sucesso!");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.out.println("ERRO: no Multipart transformado em arquivo.");
-			e.printStackTrace();
-		}	    
-		
-		if (!files.isEmpty()){
-			String path = fileSaver.write(multipartFileToSend, "pictures");				
-		}
-
-		
-		//List de fotos da pessoa
-		List<PictureEntity> list = person.getPictures();
-
-		//model.addAttribute("successFlash", "Successfully uploaded files " + newFile.getName());
-		//model.addAttribute("s3awsurl", new Constantes().s3awsurl);
-
-		return "/uploads/listMyPictures";
+		pathImage = Constantes.s3awsurl + "uploads/pictures/" + idAux + "-" + data + ".png";
+		systemName = idAux + "-" + data;
 	}
 
 	/**
