@@ -1,9 +1,9 @@
 # SystagramRest
 Serviço restful do systagram para prover os recursos da aplicação para clientes móveis e web. 
 
-O Google API Engine é uma plataforma do Google Cloud para desenvolver e hospedar aplicações web na infraestrutura do Google. Esta API do Google é uma tecnologia que usa o modelo de desenvolvimento de aplicações para o ambiente de nuvem de Plataforma como Serviço que permite a criação de aplicações totalmente gerenciadas e sem servidores (Servless). 
+O Google API Engine [1] é uma plataforma do Google Cloud [2] para desenvolver e hospedar aplicações web na infraestrutura do Google. Esta API do Google é uma tecnologia que usa o modelo de desenvolvimento de aplicações para o ambiente de nuvem de Plataforma como Serviço que permite a criação de aplicações totalmente gerenciadas e sem servidores (Servless). 
 
-A linguagem escolhida para criar o SystagramRest foi o Java integrando o Google SDK com a IDE eclipse e um projeto criado no Google Cloud. 
+A linguagem escolhida para criar o SystagramRest foi o Java integrando o Google Cloud SDK [3] com a IDE eclipse e um projeto criado no Google Cloud. 
 
 Uma das vantagens da implantação da aplicação no Google API Engine é o fato de fazer o mínimo de configuração de infraestrutura e uma vez a aplicação implantada em produção ela já vem configurada com o fator de segurança SSL (htts). Além disso, o mesmo oferece uma boa opção de monitoramento, geração de registros, diagnóstico da aplicação e requisições dos clientes. 
 
@@ -13,21 +13,21 @@ Os seguintes passos foram seguidos para garantir a construção da Aplicação S
 
 2. A linguagem escolhida para a contrução da aplicação foi o Java devido a maior familiaridade dos autores da aplicação. 
 
-3. O Google API Engine exige que seja respeitado o padrão de desenvolvimento provido pela plataforma. Com isso, foi necessário fazer um estudo de frameworks suportados como por exemplo o framework Spring Cloud e o framework Restlet. Como o modelo arquitetural escolhido foi o modelo Restful, foi escolhido o framework Restlet para a contrução do servidor de recursos da aplicação. 
+3. O Google API Engine exige que seja respeitado o padrão de desenvolvimento provido pela plataforma. Com isso, foi necessário fazer um estudo de frameworks suportados como por exemplo o framework Spring Cloud [4] e o framework Restlet [5]. Como o modelo arquitetural escolhido foi o modelo Restful [6], foi escolhido o framework Restlet para a contrução do servidor de recursos da aplicação. 
 
-4. O modelo de aplicação do Google API Engine escolhido foi o "App Engine Standard" que usa como referência o padrão Servlet 3.1 e tem como Container Java o Jetty Eclipse. Com isso, durante a construção da aplicação foi necessário seguir os padrões e limitações adotados por essas tecnologias. 
+4. O modelo de aplicação do Google API Engine escolhido foi o "App Engine Standard" que usa como referência o padrão Servlet 3.1 [7] e tem como Container Java o Jetty Eclipse [8]. Com isso, durante a construção da aplicação foi necessário seguir os padrões e limitações adotados por essas tecnologias. 
 
 Obs: Os aplicativos no padrão "App Engine Standard" são executados em um ambiente seguro e em área restrita, permitindo que o ambiente padrão do App Engine distribua solicitações em vários servidores e dimensionando servidores para atender às demandas de tráfego. Seu aplicativo é executado dentro de seu próprio ambiente seguro e confiável, independente do hardware, do sistema operacional ou da localização física do servidor.
 
-5. O projeto Java foi criado baseado no modelo de Projeto Java Web Aplication no padrão Maven para controle das dependência. 
+5. O projeto Java foi criado baseado no modelo de Projeto Java Web Aplication no padrão Maven [9] para controle das dependência. 
 
 6. Uma vez criado o projeto o mesmo foi transformado para o padrão "App Engine Standard".
 
 7. Para garantir o funcionamento da aplicação foi necessário importar as dependências e fazer a mesma apontar para o Jetty. Além de importar as dependências do Google Cloud (com.google.cloud) e Google API Engine (com.google.appengine) para garantir o uso dos recursos PaaS do Google. 
 
-8. O armazenamento dos arquivos de fotos gerenciados pela aplicação é feito no serviço Google Cloud Store. Para isso, foi necessário criar um componente que se comunicasse com tal serviço. Com isso, foi necessário criar um esquema de controle de autenticação e envio de arquivos para o Google Cloud Store. 
+8. O armazenamento dos arquivos de fotos gerenciados pela aplicação é feito no serviço Google Cloud Store [10]. Para isso, foi necessário criar um componente que se comunicasse com tal serviço. Com isso, foi necessário criar um esquema de controle de autenticação e envio de arquivos para o Google Cloud Store. 
 
-9. O armazenamento das informações gerenciadas pela aplicação é feito no serviço Google Cloud SQL usando o banco MySql e o conjunto de componentes providos pelo JPA para controle de comunicação com o banco usando os padrão ORM (Object Relational Mapping) via Hibernate. 
+9. O armazenamento das informações gerenciadas pela aplicação é feito no serviço Google Cloud SQL [11] usando o banco MySql [12] e o conjunto de componentes providos pelo JPA [13] para controle de comunicação com o banco usando os padrão ORM (Object Relational Mapping) via Hibernate [14]. 
 
 
 Recomendações técnicas de configuração de Bucket e Banco de Dados
@@ -122,3 +122,36 @@ Source filter: IP ranges
 Source IP ranges: 0.0.0.0/0
 
 Specified protocols and ports -> tcp -> 8080
+
+References
+---
+
+[1] Google API Engine. Available at https://cloud.google.com/appengine/
+
+[2] Google Cloud. Available at https://console.cloud.google.com
+
+[3] Google Cloud SDK. Available at https://cloud.google.com/sdk
+
+[4] Framework Spring Cloud. Available at https://spring.io/projects/spring-cloud
+
+[5] Framework Restlet. Available at https://restlet.com/open-source/
+
+[6] Restful. I, Roy Thomas Fielding, hereby grant permission to You, whoever you may be, to copy, print, or otherwise reproduce this dissertation for non-commercial use (including classroom, research, government use, or anything covered by the usual notion of "fair use") in its original PDF edition, 2-up PDF edition, or HTML edition, or excerpts thereof, provided that any such reproduction includes the full reference to this work, as described below, either on the initial page of the reproduction or by citation to a list of references within a larger work.
+
+[7] Servlets. Available at https://www.oracle.com/technetwork/java/javaee/servlet/index.html
+
+[8] Jetty. Available at https://www.eclipse.org/jetty/
+
+[9] Maven. Management of Builds and Dependencies. Available at https://maven.apache.org
+
+[10] Google Storage. Available at https://cloud.google.com/storage/
+
+[11] Google Cloud SQL. Available at https://cloud.google.com/sql
+
+[12] Mysql 5. Database Management System. Available at https://dev.mysql.com/downloads/mysql
+
+[13] JPA. Available at https://docs.oracle.com/javaee/7/tutorial/overview007.htm
+
+[14] Hibernate. Available at https://hibernate.org
+
+Questions, suggestions or any kind of criticism contact us by email armando@ufpi.edu.br
