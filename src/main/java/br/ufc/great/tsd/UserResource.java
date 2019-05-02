@@ -14,7 +14,10 @@ import org.restlet.resource.ServerResource;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import br.ufc.great.tsd.entity.CommentEntity;
 import br.ufc.great.tsd.entity.PersonEntity;
+import br.ufc.great.tsd.entity.PictureEntity;
+import br.ufc.great.tsd.entity.PostEntity;
 import br.ufc.great.tsd.entity.UsersEntity;
 import br.ufc.great.tsd.http.Person;
 import br.ufc.great.tsd.http.Users;
@@ -135,7 +138,7 @@ public class UserResource extends ServerResource {
     }
     
     @Put
-    public String updateUser(String id, String userJson) { 
+    public String updateUser(String userJson) { 
     	Message message = new Message();
     	Gson gson = new Gson();
     	String json;
@@ -145,7 +148,7 @@ public class UserResource extends ServerResource {
     	//recupera o json que representa usuario
     	Users user = gson.fromJson(userJson, usuarioType);
     	
-    	if (updateUser(id, user)) {
+    	if (updateUser(this.userId, user)) {
     		message.setConteudo("Usuario alterado com sucesso!");
     		message.setId(200);
     	}else {
@@ -250,7 +253,8 @@ public class UserResource extends ServerResource {
         	aux.setPassword(user.getPassword());
         	aux.setUsername(user.getUsername());
         	
-        	PersonEntity person = null; 
+        	PersonEntity person = new PersonEntity(); 
+        	person.setUser(aux);
         	aux.setPerson(person);
         	
             userService.save(aux);
@@ -277,7 +281,6 @@ public class UserResource extends ServerResource {
     	UsersEntity aux = userService.get(Long.parseLong(id));
 
     	if (aux==null) {
-    		//throw new ServiceException(404, "Usuário não existe!", 1);
     		message.setConteudo("Usuário não existe!");
     		message.setId(404);
     		return false;
@@ -285,16 +288,9 @@ public class UserResource extends ServerResource {
     	
     	aux.setEmail(user.getEmail());
     	aux.setEnabled(true);
-    	aux.setId(user.getId());
     	aux.setPassword(user.getPassword());
     	aux.setUsername(user.getUsername());
     	
-    	if (user.getPerson() != null) {
-        	PersonEntity person = new PersonEntity();
-        	person.setId(user.getPerson().getId());
-        	aux.setPerson(person);    		
-    	}
-
     	userService.update(aux);
     	return true;
     }

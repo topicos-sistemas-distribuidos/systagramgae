@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
+import org.restlet.resource.Put;
 import org.restlet.resource.ServerResource;
 
 import com.google.gson.Gson;
@@ -18,6 +19,7 @@ import br.ufc.great.tsd.entity.LikesEntity;
 import br.ufc.great.tsd.entity.PersonEntity;
 import br.ufc.great.tsd.entity.PictureEntity;
 import br.ufc.great.tsd.entity.PostEntity;
+import br.ufc.great.tsd.entity.UsersEntity;
 import br.ufc.great.tsd.http.Comment;
 import br.ufc.great.tsd.http.Likes;
 import br.ufc.great.tsd.http.Person;
@@ -845,6 +847,52 @@ public class PersonResource extends ServerResource{
 		LikesEntity likes = new LikesEntity();
 		
 		return "/person/listMyPosts";
+	}
+	
+	@Put
+    public String updatePerson(String personJson) { 
+    	Message message = new Message();
+    	Gson gson = new Gson();
+    	String json;
+    	
+    	Type pessoaType = new TypeToken<Person>(){}.getType();
+    	
+    	//recupera o json que representa usuario
+    	Person person = gson.fromJson(personJson, pessoaType);
+    	
+    	if (updatePerson(this.personId, person)) {
+    		message.setConteudo("Pessoa alterada com sucesso!");
+    		message.setId(200);
+    	}else {
+    		message.setConteudo("Erro ao alterar pessoa!");
+    		message.setId(500);    		
+    	}
+    	
+    	json = gson.toJson(message);
+    	return json; 
+    }
+
+	private boolean updatePerson(String personId, Person person) {
+	    	Message message = new Message();
+	    	 
+	    	PersonEntity aux = personService.get(Long.parseLong(personId));
+
+	    	if (aux==null) {
+	    		message.setConteudo("Pessoa não existe!");
+	    		message.setId(404);
+	    		return false;
+	    	}
+	    	
+	    	aux.setAddress(person.getAddress());
+	    	aux.setCep(person.getCep());
+	    	aux.setCity(person.getCity());
+	    	aux.setLatitude(person.getLatitude());
+	    	aux.setLongitude(person.getLongitude());
+	    	aux.setName(person.getName());
+	    	aux.setState(person.getState());
+		
+		personService.update(aux);
+		return true;
 	}
 	
 }
