@@ -1,11 +1,11 @@
 # SystagramRest
-Serviço restful do systagram para prover os recursos da aplicação para clientes móveis e web. 
+Serviço restful do systagram (https://github.com/topicos-sistemas-distribuidos/systagram) para prover os recursos da aplicação para clientes móveis e web. 
 
 O Google API Engine [1] é uma plataforma do Google Cloud [2] para desenvolver e hospedar aplicações web na infraestrutura do Google. Esta API do Google é uma tecnologia que usa o modelo de desenvolvimento de aplicações para o ambiente de nuvem de Plataforma como Serviço que permite a criação de aplicações totalmente gerenciadas e sem servidores (Servless). 
 
 A linguagem escolhida para criar o SystagramRest foi o Java integrando o Google Cloud SDK [3] com a IDE eclipse e um projeto criado no Google Cloud. 
 
-Uma das vantagens da implantação da aplicação no Google API Engine é o fato de fazer o mínimo de configuração de infraestrutura e uma vez a aplicação implantada em produção ela já vem configurada com o fator de segurança SSL (htts). Além disso, o mesmo oferece uma boa opção de monitoramento, geração de registros, diagnóstico da aplicação e requisições dos clientes. 
+Uma das vantagens da implantação da aplicação no Google API Engine é o fato de fazer o mínimo de configuração de infraestrutura e uma vez a aplicação implantada em produção ela já vem configurada com o fator de segurança SSL (htts). Além disso, o mesmo oferece uma boa opção de monitoramento, geração de registros, diagnóstico da aplicação, balanceamento de carga e requisições dos clientes. 
 
 Os seguintes passos foram seguidos para garantir a construção da Aplicação SystagramRest prover os recursos que serão consumidos por clientes web e mobile no padrão Restful. 
 
@@ -13,13 +13,13 @@ Os seguintes passos foram seguidos para garantir a construção da Aplicação S
 
 2. A linguagem escolhida para a contrução da aplicação foi o Java devido a maior familiaridade dos autores da aplicação. 
 
-3. O Google API Engine exige que seja respeitado o padrão de desenvolvimento provido pela plataforma. Com isso, foi necessário fazer um estudo de frameworks suportados como por exemplo o framework Spring Cloud [4] e o framework Restlet [5]. Como o modelo arquitetural escolhido foi o modelo Restful [6], foi escolhido o framework Restlet para a contrução do servidor de recursos da aplicação. 
+3. O Google API Engine exige que seja respeitado o padrão de desenvolvimento provido pela plataforma. Com isso, foi necessário fazer um estudo de frameworks suportados como por exemplo o framework Spring Cloud [4] e o framework Restlet [5]. Como o modelo arquitetural escolhido foi o modelo Restful [6], foi escolhido o framework Restlet para a construção do servidor de recursos da aplicação. 
 
 4. O modelo de aplicação do Google API Engine escolhido foi o "App Engine Standard" que usa como referência o padrão Servlet 3.1 [7] e tem como Container Java o Jetty Eclipse [8]. Com isso, durante a construção da aplicação foi necessário seguir os padrões e limitações adotados por essas tecnologias. 
 
 Obs: Os aplicativos no padrão "App Engine Standard" são executados em um ambiente seguro e em área restrita, permitindo que o ambiente padrão do App Engine distribua solicitações em vários servidores e dimensionando servidores para atender às demandas de tráfego. Seu aplicativo é executado dentro de seu próprio ambiente seguro e confiável, independente do hardware, do sistema operacional ou da localização física do servidor.
 
-5. O projeto Java foi criado baseado no modelo de Projeto Java Web Aplication no padrão Maven [9] para controle das dependência. 
+5. O projeto Java foi criado baseado no modelo de Projeto Java Web Aplication no padrão Maven [9] para controle das dependências. 
 
 6. Uma vez criado o projeto o mesmo foi transformado para o padrão "App Engine Standard".
 
@@ -68,10 +68,12 @@ touch ~/.bash_profile
 open -a TextEdit.app ~/.bash_profile
 export GOOGLE_APPLICATION_CREDENTIALS=[Local da chave]
 
-Outra opção é passar o arquivo direto no código. Veja exemplo da appspring
+Outra opção é passar o arquivo direto no código. 
 
 6. Criar o banco de dados no Google Cloud
+
 a) Criar o banco
+
 b) Liberar o acesso de IP público. Para isso, clique em Show configuration options e na parte de redes autorizadas Authorize Networks coloque o endereço 0.0.0.0/0
 
 Integração com o Google API Engine (GAE)
@@ -83,9 +85,11 @@ systagramgae
 * Escolha a linguagem java
 
 2. Setar o projeto via Gcloud.
+
 $ gcloud config set project systagramgae
 
 3. Garantir que os componentes api-java estejam instalados.
+
 $ gcloud components install app-engine-java
 
 4. Instalar o plugin do google cloud sdk no Eclipse.
@@ -96,6 +100,7 @@ Obs: caso ocorra algum erro de incompatibilidade de componentes
 https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/2285
 
 6. Criar a instancia do banco.
+
 a) Dados
 banco-systagram
 
@@ -136,7 +141,7 @@ References
 
 [5] Framework Restlet. Available at https://restlet.com/open-source/
 
-[6] Restful. I, Roy Thomas Fielding, hereby grant permission to You, whoever you may be, to copy, print, or otherwise reproduce this dissertation for non-commercial use (including classroom, research, government use, or anything covered by the usual notion of "fair use") in its original PDF edition, 2-up PDF edition, or HTML edition, or excerpts thereof, provided that any such reproduction includes the full reference to this work, as described below, either on the initial page of the reproduction or by citation to a list of references within a larger work.
+[6] Restful. I, Roy Thomas Fielding. Available at https://www.ics.uci.edu/~fielding/pubs/dissertation/fielding_dissertation.pdf
 
 [7] Servlets. Available at https://www.oracle.com/technetwork/java/javaee/servlet/index.html
 
